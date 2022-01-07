@@ -222,6 +222,18 @@ for landscape_def in ['loop', 'contact']:
         plt.close()
         ### end_fig
 
+        ### fig: boxplot of enh num by log2 expression for all tissues
+        fig = plt.figure(figsize=(8,10))
+        g = sns.lmplot(data=enh_by_gene_anno,
+                        x='enh_num', y='log2_exp', col='log2_exp',
+                        col_wrap=5, truncate=True)
+        facet_titles(g.axes)
+        facet_x_axis(g.axes, 'Number of CREs')
+        sns.despine()
+        plt.tight_layout()
+        plt.savefig(f'{RES_PATH}/all_{landscape_def}_enh-numXlog2exp_bytissue_lmplot.{fmt}', format=fmt, dpi=400)
+        plt.close()
+        ### end_fig
 
     ### fig/table: MWU test of number of enhancers exp vs. not
     for tis_name in tis_order:
