@@ -2,15 +2,6 @@
 #   name      | mary lauren benton
 #   conda env | enh_gain-loss
 #   created   | 2019.12.10
-#   updated   | 2019.12.11-12
-#             | 2019.12.16-18
-#             | 2020.04.06
-#             | 2020.04.20
-#             | 2020.10.21
-#             | 2020.11.11
-#             | 2021.07.23
-#             | 2021.07.26
-#             | 2021.07.28
 #
 #  tis_spec threshold = 0.6
 ###
@@ -28,7 +19,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 ### // constants and paths // ###
-DATA_PATH = '../../../data'           # relative to current dir
+DATA_PATH = '../../../dat'           # relative to current dir
 GEN_DATA_PATH = '../../../../data'
 DORS_DATA_PATH = '../../../../../../data'
 RES_PATH = '../'
