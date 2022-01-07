@@ -1,0 +1,20 @@
+#!/bin/bash
+###
+#   name      | mary lauren benton
+#   created   | 2019.02.18
+#
+#   this script will create and submit a slurm job with arguments for custom
+#   memory and runtime requirements; autopopulates date for the output file
+###
+
+
+if [ "$#" -ne 2 ]; then
+    memory='16G'
+    runtime='08:00:00'
+else
+    memory=$1
+    runtime=$2
+fi
+
+# launch notebook and remove temp file
+sbatch --mem=$memory --time=$runtime --output="out/$(date +%F)_notebook.out" launch_nb.slurm

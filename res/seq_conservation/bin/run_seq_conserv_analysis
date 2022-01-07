@@ -1,0 +1,17 @@
+#!/bin/bash
+# marylaurenbenton, 2022
+
+ml Anaconda3
+source activate enh_gain-loss
+
+mkdir -p ../res ../dat ../fig
+
+# generate CRE quartiles
+python parse_cre_lanscapes.py
+
+# calculate overlap with linsight scores 
+./calc_linsight_overlap
+
+# summarize and plot results
+python summarize_attributes_by_cre.py
+

@@ -1,0 +1,17 @@
+#!/bin/bash
+# marylaurenbenton, 2022
+
+ml GCC/10.2.0  OpenMPI/4.0.5  R/4.0.5 Anaconda3
+source activate enh_gain-loss
+
+mkdir -p ../dat ../res ../fig
+
+# calculate cv across individuals for genes in all tissues
+python calculate_gtex_cv_bytis.py
+
+# calculate residuals for cv
+Rscript calc_cv_resids.R
+
+# summarize and visualize variability results
+python plot_cv_by_landscape_attr.py
+

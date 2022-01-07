@@ -1,0 +1,20 @@
+#!/bin/bash
+# marylaurenbenton, 2022
+#
+# this script will create and submit a slurm job with autopopulated tissue 
+# name for the output file
+
+# generate input files
+python parse_cre_landscapes.py
+python generate_peakachu_blacklist.py
+
+# create results directory
+mkdir -p ../res
+
+for tis in ovary psoas_muscle heart_left_ventricle lung spleen small_intestine pancreas liver brain_prefrontal_cortex brain_hippocampus;
+do
+    echo $tis
+    sbatch --export=tis=$tis,lndscp='peakachuloop' --output="../res/$(date +%F)_${tis}_eqtl_peakachuloop_enrichment.out" slurm/gtex_enrichment_peakachuloop.slurm
+    sbatch --export=tis=$tis,lndscp='hicQ05'       --output="../res/$(date +%F)_${tis}_eqtl_hicQ05_enrichment.out" slurm/gtex_enrichment_hicQ05.slurm
+done
+
