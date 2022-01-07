@@ -474,13 +474,18 @@ for tis in ['ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen', '
     hic_anno = create_df_anno(loops.to_dataframe(names=['chrom', 'start', 'end']), enh_count, gene_count)
 
     ### fig: distplot for gene/enh per loop, length of loops in tissue
+    estat = hic_anno.e_count.describe()
+    ehi = (1.5 * (estat['75%'] - estat['25%'])) + estat['75%']
+    gstat = hic_anno.g_count.describe()
+    ghi = (1.5 * (gstat['75%'] - gstat['25%'])) + gstat['75%']
+
     with sns.plotting_context("paper", rc=rc):
         fig, axs = plt.subplots(nrows=3, figsize=(4,10))
-        sns.histplot(hic_anno.e_count, color='.3', kde=False, discrete=True, ax=axs[0])
+        sns.histplot(hic_anno.query(f'e_count <= {ehi}').e_count, color='.3', kde=False, discrete=True, ax=axs[0])
         axs[0].set_xlabel('# CRE / Loop')
-        sns.histplot(hic_anno.g_count, color='.3', kde=False, discrete=True, ax=axs[1])
+        sns.histplot(hic_anno.query(f'g_count <= {ghi}').g_count, color='.3', kde=False, discrete=True, ax=axs[1])
         axs[1].set_xlabel('# Gene / Loop')
-        sns.histplot((hic_anno.end-hic_anno.start)/1000, kde=False, color='.3', ax=axs[2])
+        sns.histplot((hic_anno.end-hic_anno.start)/1000, kde=False, log_scale=True, color='.3', ax=axs[2])
         axs[2].set_xlabel('Length (kb)')
         sns.despine()
         plt.tight_layout()
