@@ -20,9 +20,8 @@ from scipy import stats
 plt.switch_backend('agg')  # add to save plots non-interactively
 
 ### // constants and paths \\ ###
-DORS = '/dors/capra_lab/users/bentonml/cross_species_gain_loss'
-EXP_DATA_PATH = f'{DORS}/results/link_enh_to_genes/dat/2021-07-30'
-RES_PATH = f'{DORS}/results/link_enh_to_genes/fig/{str(date.today())}'
+EXP_DATA_PATH = f'../dat/2022-01-07'
+RES_PATH = f'../fig/{str(date.today())}'
 
 # create a date stamped dir for files
 if not os.path.isdir(RES_PATH):
@@ -360,7 +359,6 @@ for landscape_def in ['loop', 'contact']:
         plt.close()
         ### end_fig
 
-
         ### fig: boxplot of conserved enhancer bp by annotation, exp only, fliers
         fig = plt.figure(figsize=(8,10))
         g = sns.boxplot(x='frac_phastcons', hue='anno', y='tissue', data=enh_by_expgene_anno.query('anno=="hk" | anno=="lof_intol" | anno=="exp_nocat"'),
@@ -409,7 +407,7 @@ for landscape_def in ['loop', 'contact']:
         plt.close()
         ### end_fig
 
-    ### fig: log stats to file
+    ### fig/table: log stats to file
     for tis in tis_order:
         logging.info(f'Running enhancer number Kruskal Wallis on {tis}')
         ts, p = stats.kruskal(*[group['enh_num'].values for name, group in enh_by_expgene_anno.query(f'tissue=="{tis}" & anno!="expressed" & anno!="tis_spec" & anno!="exp_broad" & anno!="essential"').groupby('anno')])
