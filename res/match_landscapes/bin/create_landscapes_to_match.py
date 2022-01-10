@@ -12,19 +12,15 @@ import numpy  as np
 from datetime import date
 
 ### // constants and paths \\ ###
-DORS = '/dors/capra_lab/users/bentonml/cross_species_gain_loss'
-#TODO: update path
-EXP_DAT_PATH = f'{DORS}/results/link_enh_to_genes/dat/2021-07-30'
-OUT_DAT_PATH = f'{DORS}/results/match_landscapes/dat/{str(date.today())}'
+EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-01-07'
+OUT_DAT_PATH = f'../dat/match_landscapes/dat/{str(date.today())}'
 
 # create a date stamped dir for files
 if not os.path.isdir(OUT_DAT_PATH):
     os.makedirs(OUT_DAT_PATH)
 
-#TODO: add support for contact-based landscapes
-landscape_def = ['loop'] #, 'contact']
+landscape_def = ['loop', 'contact']
 
-#TODO: update tissue order
 tis_order = ['ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen',
              'small_intestine', 'pancreas', 'liver', 'brain_prefrontal_cortex', 'brain_hippocampus']
 
@@ -49,10 +45,10 @@ def read_data(landscape_def):
 for landscape in landscape_def:
     # read all data for landscape type
     all_tis = read_data(landscape)
+    all_tis_exp = all_tis[all_tis['exp']==1].copy(deep=True)
 
     # create expressed gene only dataframe
-    enh_by_expgene_anno = (all_tis
-                               .query('exp==1')
+    enh_by_expgene_anno = (all_tis_exp
                                .filter(['target_gene', 'tissue', 'exp', 'hk', 'rel_entropy', 'lof_intol', 'essential', 'tis_spec', 'exp_nocat', 'exp_broad_nohk', 'exp_broad', 'enh_num'])
                                .assign(expressed=lambda x: x.exp)
                                .set_index(['target_gene', 'tissue', 'enh_num', 'exp', 'rel_entropy'])
@@ -60,7 +56,7 @@ for landscape in landscape_def:
                                .reset_index()
                                .rename(columns={'level_5':'anno', 0:'val'})
                                .query('val == 1')
-                               .merge(all_tis.query('exp==1').filter(['target_gene', 'gtex_exp', 'cds_length', 'gene_length', 'tissue', 'enh_rel_entropy', 'frac_tisspec_enh', 'frac_phastcons', 'tss']), how='inner', validate='m:1')
+                               .merge(all_tis_exp.filter(['target_gene', 'gtex_exp', 'cds_length', 'gene_length', 'tissue', 'enh_rel_entropy', 'frac_tisspec_enh', 'frac_phastcons', 'tss']), how='inner', validate='m:1')
                                .assign(gtex_exp_log2=lambda x: np.log2(x.gtex_exp)))
 
     for tis in tis_order:
@@ -85,4 +81,3 @@ for landscape in landscape_def:
                 .query(f'tissue=="{tis}" & enh_num>0 & (anno=="lof_intol" | anno=="exp_nocat")')
                 .filter(['anno', 'gtex_exp_log2', 'target_gene', 'enh_num']))
         lo.to_csv(f'{OUT_DAT_PATH}/lof_gt0_{tis}_{landscape}.tsv', sep='\t', index=False, header=True)
-
