@@ -8,6 +8,8 @@ res/*/stats_by_tissue*.txt
 
 bin/slurm/out/*
 
+README_*
+
 # mac OS
 .DS_Store
 bin/.DS_Store
