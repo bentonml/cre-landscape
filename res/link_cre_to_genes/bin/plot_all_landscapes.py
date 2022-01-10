@@ -222,19 +222,6 @@ for landscape_def in ['loop', 'contact']:
         plt.close()
         ### end_fig
 
-        ### fig: boxplot of enh num by log2 expression for all tissues
-        fig = plt.figure(figsize=(8,10))
-        g = sns.lmplot(data=enh_by_gene_anno,
-                        x='enh_num', y='log2_exp', col='log2_exp',
-                        col_wrap=5, truncate=True)
-        facet_titles(g.axes)
-        facet_x_axis(g.axes, 'Number of CREs')
-        sns.despine()
-        plt.tight_layout()
-        plt.savefig(f'{RES_PATH}/all_{landscape_def}_enh-numXlog2exp_bytissue_lmplot.{fmt}', format=fmt, dpi=400)
-        plt.close()
-        ### end_fig
-
     ### fig/table: MWU test of number of enhancers exp vs. not
     for tis_name in tis_order:
         ts, p = stats.mannwhitneyu(all_tis[all_tis['exp']==0].query(f'tissue=="{tis_name}"').enh_num,
@@ -265,7 +252,6 @@ for landscape_def in ['loop', 'contact']:
 
     enh_by_expgene_anno = enh_by_expgene_anno.assign(num_tisspec_enh=lambda x: x.enh_num * x.frac_tisspec_enh)
     enh_by_expgene_anno = enh_by_expgene_anno.assign(gtex_exp_log2=lambda x: np.log2(x.gtex_exp))
-    enh_by_expgene_anno.head()
 
     logging.info('Plot enhancer attributes by gene annotation (Osterwalder-style)')
 
@@ -418,6 +404,22 @@ for landscape_def in ['loop', 'contact']:
         plt.savefig(f'{RES_PATH}/all_{landscape_def}_genetype_v_enhnum_bytissue_exponly_nofliers_boxplot_hue.{fmt}', format=fmt, dpi=400)
         plt.close()
         ### end_fig
+
+        ### fig: boxplot of enh num by log2 expression for all tissues
+        nonzero = enh_by_expgene_anno.query('enh_num>0').assign(cre_bins=lambda x: pd.qcut(x['enh_num'], q=10, labels=[1,2,3,4,5,6,7,8,9,10]))
+        logging.info(f'CRE bin edges: {pd.qcut(nonzero.enh_num, q=10, retbins=True)[1]}')
+
+        fig = plt.figure(figsize=(8,10))
+        g = sns.catplot(data=nonzero, kind='box', showfliers=False,
+                        x='cre_bins', y='gtex_exp_log2', col='tissue',
+                        palette='Greys', sharex=False, col_wrap=5)
+        facet_titles(g.axes)
+        facet_x_axis(g.axes, 'CRE Decile')
+        g.set_ylabels('Log2 Gene Expression')
+        plt.savefig(f'{RES_PATH}/all_{landscape_def}_enh-numXlog2exp_bytissue_gt0_boxplot.{fmt}', format=fmt, dpi=400)
+        plt.close()
+        ### end_fig
+
 
     ### fig/table: log stats to file
     for tis in tis_order:
