@@ -15,7 +15,7 @@ from datetime import date
 from scipy import stats
 
 ### // constants and paths // ###
-DATA_PATH = '../../../data'           # relative to current dir
+DATA_PATH = '../../../dat'           # relative to current dir
 GEN_DATA_PATH = '../../../../data'
 DORS_DATA_PATH = '../../../../../../data'
 RES_PATH = '../'

@@ -19,7 +19,7 @@ from datetime import date
 from scipy import stats
 
 ### // constants and paths // ###
-DATA_PATH = '../../../data'           # relative to current dir
+DATA_PATH = '../../../dat'           # relative to current dir
 GEN_DATA_PATH = '../../../../data'
 DORS_DATA_PATH = '../../../../../../data'
 RES_PATH = '../'
@@ -143,7 +143,7 @@ hk = (pd.read_table(f'{GEN_DATA_PATH}/dna/hg19/eisenberg13_housekeeping_ensemblh
             .filter(['gene', 'hk']))
 
 # read/parse list of loss of function intolerant genes from gnomad
-lof = (pd.read_table(f'{GEN_DATA_PATH}/dna/hg19/gnomad.v2.1.1.lof_metrics.by_gene.txt')
+lof = (pd.read_table(f'{GEN_DATA_PATH}/dna/hg19/gnomad.v2.1.1.lof_metrics.by_gene.bed')
             .assign(lof_intol=lambda x: np.where(x.oe_lof_upper < 0.35, 1, 0))
             .rename(columns={'gene_id':'gene'})
             .filter(['gene', 'lof_intol']))
