@@ -34,8 +34,7 @@ rc = {'font.size':14, 'axes.titlesize':16,'axes.labelsize':14, 'legend.fontsize'
 
 ### // functions \\ ###
 def read_enrichment_output(tissue, landscape_type, path=RES_PATH):
-    #TODO: update path date
-    with open(f'{path}/2021-12-17_{tissue}_eqtl_{landscape_type}_enrichment.out', 'r') as res_file:
+    with open(f'{path}/2022-01-10_{tissue}_eqtl_{landscape_type}_enrichment.out', 'r') as res_file:
         res = []
 
         for q in ['q1', 'q2', 'q3', 'q4']:
