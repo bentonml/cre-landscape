@@ -18,12 +18,13 @@ from scipy import stats
 plt.switch_backend('agg')  # add to save plots non-interactively
 
 ### // constants and paths \\ ###
-DORS = '/dors/capra_lab/users/bentonml/cre_landscape'
-#TODO: update paths
-EXP_DAT_PATH = f'{DORS}/res/link_enh_to_genes/dat/2021-07-30'
-CV_FILE_PATH = f'{DORS}/res/exp_variation/dat'
-RES_PATH = f'{DORS}/res/exp_variation/fig/{str(date.today())}'
+EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-01-07'
+CV_FILE_PATH = f'../dat'
+RES_PATH = f'../fig/{str(date.today())}'
 
+# create a date stamped dir for files
+if not os.path.isdir(RES_PATH):
+        os.makedirs(RES_PATH)
 
 tis_order = ['spleen','liver', 'heart_left_ventricle', 'brain_hippocampus', 'lung', 'pancreas',
              'brain_prefrontal_cortex', 'psoas_muscle', 'small_intestine', 'ovary']
@@ -66,8 +67,7 @@ def read_data(landscape_def):
 def read_cv_data(tis, thresh='0.8'):
     return pd.read_table(f'{CV_FILE_PATH}/{tis}_loess_cv_resid.csv', sep=',')
 
-#TODO: update to add hic contact
-for landscape_def in ['loop']:
+for landscape_def in ['loop', 'contact']:
     print(landscape_def)
 
     for tis in tis_order:
@@ -78,8 +78,6 @@ for landscape_def in ['loop']:
         all_tis_exp = all_tis[all_tis['exp']==1]
 
         df_merge = df.merge(all_tis_exp, left_on='Name', right_on='target_gene', how='inner')
-        df_merge = df_merge.assign(enh_num_quartile=lambda x: pd.qcut(x['enh_num'], q=4, labels=[1,2,3,4]))
-        df_merge = df_merge.assign(log2_tpm_quartile=lambda x: pd.qcut(x['median_log2_tpm'], q=4, labels=[1,2,3,4]))
 
         with sns.plotting_context("paper", rc=rc):
             g = sns.lmplot(x='median_log2_tpm', y='log2cv', data=df_merge, lowess=True, scatter_kws={'alpha':0.3, 'color':'.3'}, line_kws={'color':'tab:red'})
@@ -96,17 +94,6 @@ for landscape_def in ['loop']:
             plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_log2exp_v_expVar_lmplot.{fmt}', format=fmt, dpi=400)
             plt.close()
 
-        rho, p = stats.spearmanr(df_merge.enh_num, df_merge.loess_resid)
-        print(f'{tis}\t# CRE\t{rho}\t{p}')
-        rho, p = stats.spearmanr(df_merge.rel_entropy, df_merge.loess_resid)
-        print(f'{tis}\tRelative entropy\t{rho}\t{p}')
-        rho, p = stats.spearmanr(df_merge.frac_tisspec_enh, df_merge.loess_resid)
-        print(f'{tis}\t% tissue-specific CRE\t{rho}\t{p}')
-
-        gt0 = df_merge.filter(['frac_phastcons', 'loess_resid']).dropna()
-        rho, p = stats.spearmanr(gt0.frac_phastcons, gt0.loess_resid)
-        print(f'{tis}\t% PhastCons\t{rho}\t{p}')
-
         with sns.plotting_context("paper", rc=rc):
             df_merge = df_merge.rename(columns={'loess_resid':'Expression variation', 'rel_entropy':'Tissue-specificity (gene)',
                                         'enh_num':'# CREs', 'frac_tisspec_enh':'% tissue-specific CREs', 'frac_phastcons':'% PhastCons'})
@@ -120,3 +107,17 @@ for landscape_def in ['loop']:
             plt.tight_layout()
             plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_expVar_heatmap.{fmt}', format=fmt, dpi=400)
             plt.close()
+
+
+            gt0 = df_merge[df_merge['# CREs'] > 0]
+            corr = gt0.filter(['Expression variation', 'Tissue-specificity (gene)', '# CREs', '% tissue-specific CREs', '% PhastCons']).corr('spearman')
+            mask = np.triu(np.ones_like(corr, dtype=bool))
+            f, ax = plt.subplots(figsize=(11, 9))
+            cmap = sns.diverging_palette(240, 10, as_cmap=True)
+            g = sns.heatmap(corr, mask=mask, cmap=cmap, vmax=1, center=0, vmin=-1,
+                            square=True, linewidths=.5, cbar_kws={"shrink": .5}, annot=True)
+            g.set_xticklabels(g.get_xticklabels(), rotation = 30, horizontalalignment='right')
+            plt.tight_layout()
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_expVar_heatmap_gt0.{fmt}', format=fmt, dpi=400)
+            plt.close()
+

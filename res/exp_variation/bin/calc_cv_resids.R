@@ -16,7 +16,7 @@ tis_names <- c('ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen'
 
 for (tissue in tis_names) {
     print(tissue)
-    df  <- read.csv(paste(DAT_PATH, '2021-08-04_', tissue, '_1_gt0.8_gene_by_cv.tsv', sep=''), sep='\t')
+    df  <- read.csv(paste(DAT_PATH, '2022-01-10_', tissue, '_1_gt0.8_gene_by_cv.tsv', sep=''), sep='\t')
 
     # log scale the cv -- b/c heteroscedasticity 
     df$log2cv <- log2(df$cv)
@@ -26,7 +26,7 @@ for (tissue in tis_names) {
     geom_point() +
     geom_smooth(method = "loess", se = FALSE) +
     theme_classic()
-    ggsave(filename=paste(FIG_PATH, tissue, '_loess_orig.pdf'), device='pdf')
+    ggsave(filename=paste(FIG_PATH, tissue, '_loess_orig.pdf', sep=''), device='pdf')
 
     # run the loess model
     loess_mod <- loess(log2cv ~ median_log2_tpm, data=df, span=0.25, degree=1)
@@ -36,7 +36,7 @@ for (tissue in tis_names) {
     geom_point() +
     geom_smooth(method = "loess", se = FALSE) +
     theme_classic()
-    ggsave(filename=paste(FIG_PATH, tissue, '_loess_resid.pdf'), device='pdf')
+    ggsave(filename=paste(FIG_PATH, tissue, '_loess_resid.pdf', sep=''), device='pdf')
 
     # add the residuals as column in df
     df$loess_resid <- loess_mod$residuals
