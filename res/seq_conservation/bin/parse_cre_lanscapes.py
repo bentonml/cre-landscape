@@ -10,8 +10,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # relative to bin/ dir
-#TODO:  update paths
-DATA_PATH = '../../link_enh_to_genes/dat/2021-01-26'
+DATA_PATH = '../../link_cre_to_genes/dat/2022-01-07'
 RES_PATH = '../dat'
 
 final_cols = ['enh_chrom', 'enh_start', 'enh_end', 'landscape_cre_num',

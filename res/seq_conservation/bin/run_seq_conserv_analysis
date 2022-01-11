@@ -13,5 +13,5 @@ python parse_cre_lanscapes.py
 ./calc_linsight_overlap
 
 # summarize and plot results
-python summarize_attributes_by_cre.py
+python summarize_attributes_by_cre.py >> ../res/2022-01-10.out
 

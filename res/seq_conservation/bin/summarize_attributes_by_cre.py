@@ -2,7 +2,6 @@
 #   name      | mary lauren benton
 #   conda env | enh_gain-loss
 #   created   | 2021.02.23
-#   updated   | 2021.12.07
 #
 #   assumes pwd is here with hydrogen:
 #       /dors/capra_lab/users/bentonml/cross_species_gain_loss/bin/slurm/
@@ -12,7 +11,6 @@
 import pandas as pd
 import numpy  as np
 from datetime import date
-from pybedtools import BedTool
 from scipy import stats
 
 import seaborn as sns
@@ -21,8 +19,7 @@ import statsmodels.api as sm
 
 
 ### // constants, paths, functions \\ ###
-#TODO: update path
-CRE_PATH = '../../res/link_enh_to_genes/dat/2021-07-30'
+CRE_PATH = '../../link_cre_to_genes/dat/2022-01-07'
 DAT_PATH = '../dat'
 FIG_PATH = '../fig'
 
@@ -43,8 +40,7 @@ linsight_cols = ['chrom', 'start', 'end', 'landscape_cre_num', 'landscape_tisspe
 ### \\
 
 
-#TODO: add contact based def
-for lndscp_type in ['peakachuloop']:
+for lndscp_type in ['peakachuloop', 'hicQ05']:
     print(lndscp_type)
     print(f'tissue\ttest\trho\tp')
 
@@ -74,7 +70,6 @@ for lndscp_type in ['peakachuloop']:
         # kruskal wallis with linsight mean
         ts, p = stats.kruskal(*[group['linsight_score_mean'].values for name, group in ldf.groupby('landscape_cre_quartile_id_mean')])
         means = ldf.groupby('landscape_cre_quartile_id_mean').linsight_score_mean.mean()
-        print(f'{tis_name[tis]}\t{means[1]}\t{means[2]}\t{means[3]}\t{means[4]}\t{ts}\t{p}\t{p*20}\n')
 
         with sns.plotting_context("paper", rc=rc):
             fig, axes = plt.subplots(1, 2, figsize=(8, 4), sharey=False)
@@ -92,4 +87,5 @@ for lndscp_type in ['peakachuloop']:
         print(f'{tis}\t# CRE v. Mean LINSIGHT\t{rho}\t{p}')
         rho, p = stats.spearmanr(ddf.cre_num, ddf.phastcons_prop)
         print(f'{tis}\t# CRE v. % PhastCons\t{rho}\t{p}')
+        print(f'{tis_name[tis]}\t{means[1]}\t{means[2]}\t{means[3]}\t{means[4]}\t{ts}\t{p}\t{p*20}\n')
 

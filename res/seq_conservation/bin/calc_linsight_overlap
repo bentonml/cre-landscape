@@ -4,7 +4,7 @@
 # pwd: /dors/capra_lab/users/bentonml/cross_species_gain_loss/results/cre_attr_overlap/bin
 for file in `ls ../dat/*.bed`;
 do
-    lin='/dors/capra_lab/users/fongsl/enh_ages/tools/linsight.py'
+    lin='./linsight.py'
     python $lin $file
 done
 
