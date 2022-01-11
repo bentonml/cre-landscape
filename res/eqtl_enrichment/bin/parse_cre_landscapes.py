@@ -5,13 +5,13 @@
 #
 ###
 
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 # relative to current dir
-#TODO update path
-DATA_PATH = '../link_cre_to_genes/dat/2021-07-30'
+DATA_PATH = '../../link_cre_to_genes/dat/2022-01-07'
 RES_PATH = '../dat'
 
 # create a date stamped dir for files

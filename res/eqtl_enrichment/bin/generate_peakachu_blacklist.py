@@ -4,10 +4,8 @@
 import pandas as pd
 from pybedtools import BedTool
 
-#TODO: update paths
-DATA_PATH = '../../../../data/'        # relative to current dir
-GEN_DATA_PATH = '../../../../../data'
-
+GEN_DATA_PATH = '../../../../data'        # relative to current dir
+DATA_PATH = '../../../dat'
 
 tis_to_loop = {'ovary':'Schmitt_2016.Ovary.hg19.peakachu-merged.loops',
                'psoas_muscle':'Schmitt_2016.Psoas.hg19.peakachu-merged.loops',
