@@ -64,20 +64,21 @@ for landscape in landscape_def:
         hk = (enh_by_expgene_anno
                 .query(f'tissue=="{tis}" & (anno=="hk" | anno=="exp_nocat")')
                 .filter(['anno', 'gtex_exp_log2', 'target_gene', 'enh_num']))
-        hk.to_csv(f'{OUT_DAT_PATH}/hk_{tis}_{landscape}.tsv', sep='\t', index=False, header=True)
+        hk.to_csv(f'{OUT_DAT_PATH}/hk_{landscape}_{tis}_{landscape}.tsv', sep='\t', index=False, header=True)
 
         lo = (enh_by_expgene_anno
                 .query(f'tissue=="{tis}" & (anno=="lof_intol" | anno=="exp_nocat")')
                 .filter(['anno', 'gtex_exp_log2', 'target_gene', 'enh_num']))
-        lo.to_csv(f'{OUT_DAT_PATH}/lof_{tis}_{landscape}.tsv', sep='\t', index=False, header=True)
+        lo.to_csv(f'{OUT_DAT_PATH}/lof_{landscape}_{tis}_{landscape}.tsv', sep='\t', index=False, header=True)
 
         # calculate hk and lof dataframes for each tissue, CRE > 0
         hk = (enh_by_expgene_anno
                 .query(f'tissue=="{tis}" & enh_num>0 & (anno=="hk" | anno=="exp_nocat")')
                 .filter(['anno', 'gtex_exp_log2', 'target_gene', 'enh_num']))
-        hk.to_csv(f'{OUT_DAT_PATH}/hk_gt0_{tis}_{landscape}.tsv', sep='\t', index=False, header=True)
+        hk.to_csv(f'{OUT_DAT_PATH}/hk_gt0_{landscape}_{tis}_{landscape}.tsv', sep='\t', index=False, header=True)
 
         lo = (enh_by_expgene_anno
                 .query(f'tissue=="{tis}" & enh_num>0 & (anno=="lof_intol" | anno=="exp_nocat")')
                 .filter(['anno', 'gtex_exp_log2', 'target_gene', 'enh_num']))
-        lo.to_csv(f'{OUT_DAT_PATH}/lof_gt0_{tis}_{landscape}.tsv', sep='\t', index=False, header=True)
+        lo.to_csv(f'{OUT_DAT_PATH}/lof_gt0_{landscape}_{tis}_{landscape}.tsv', sep='\t', index=False, header=True)
+
