@@ -13,7 +13,7 @@ from datetime import date
 
 ### // constants and paths \\ ###
 EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-01-07'
-OUT_DAT_PATH = f'../dat/match_landscapes/dat/{str(date.today())}'
+OUT_DAT_PATH = f'../dat/{str(date.today())}'
 
 # create a date stamped dir for files
 if not os.path.isdir(OUT_DAT_PATH):
