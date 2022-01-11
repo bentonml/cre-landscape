@@ -1,7 +1,6 @@
 ###
 #   name      | mary lauren benton
 #   created   | 2021.11.12
-#   updated   | 2021.12.15
 #
 #   use matchit in R to generate gene sets matched on covariates
 #   requires: $ ml GCC/10.2.0  OpenMPI/4.0.5  R/4.0.5
@@ -12,14 +11,14 @@ library(readr)
 suppressMessages(library(dplyr))
 
 # constants and paths
-#TODO: update path dates
-INDATE <- '2021-12-15'
-RESDATE <- '2021-12-15'
+INDATE  <- '2022-01-10'
+RESDATE <- '2022-01-10'
 
 DORS <- '/dors/capra_lab/users/bentonml/cre_landscape'
 DATA <- paste(DORS, '/res/match_landscapes/dat/', INDATE, sep='')
 RESDATA <- paste(DORS, '/res/match_landscapes/dat/', RESDATE, sep='')
 
+landscapes <- c('loop', 'contact')
 tissues <- c('ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen',
              'small_intestine', 'pancreas', 'liver', 'brain_prefrontal_cortex', 'brain_hippocampus')
 
@@ -46,7 +45,7 @@ for (landscape in landscapes) {
       hk$anno <- factor(hk$anno, levels=c("exp_nocat", "hk"), labels=c('Expressed', 'Housekeeping'))
       matched <- matchit(anno ~ gtex_exp_log2, data=hk, estimand="ATT", replace=FALSE, ratio=2, caliper=0.1)
 
-      return_match_statistics(matched, tis=tis, dtype='hk')
+      return_match_statistics(matched, tis=tis, dtype='hk', ltype=landscape)
       mdata <- match.data(matched, data=hk, distance="prop.score")
       write_tsv(mdata, paste(RESDATA, '/matched_hk_', tis, '_', landscape, '.tsv', sep=''))
 
@@ -56,7 +55,7 @@ for (landscape in landscapes) {
       lo$anno <- factor(lo$anno, levels=c("exp_nocat", "lof_intol"), labels=c('Expressed', 'LoF Intolerant'))
       matched <- matchit(anno ~ gtex_exp_log2, data=lo, estimand="ATT", replace=FALSE, ratio=2, caliper=0.1)
 
-      return_match_statistics(matched, tis=tis, dtype='lof')
+      return_match_statistics(matched, tis=tis, dtype='lof', ltype=landscape)
       mdata <- match.data(matched, data=lo, distance="prop.score")
       write_tsv(mdata, paste(RESDATA, '/matched_lof_', tis, '_', landscape, '.tsv', sep=''))
       
@@ -66,7 +65,7 @@ for (landscape in landscapes) {
       hk$anno <- factor(hk$anno, levels=c("exp_nocat", "hk"), labels=c('Expressed', 'Housekeeping'))
       matched <- matchit(anno ~ gtex_exp_log2, data=hk, estimand="ATT", replace=FALSE, ratio=2, caliper=0.1)
 
-      return_match_statistics(matched, tis=tis, dtype='hk_gt0')
+      return_match_statistics(matched, tis=tis, dtype='hk_gt0', ltype=landscape)
       mdata <- match.data(matched, data=hk, distance="prop.score")
       write_tsv(mdata, paste(RESDATA, '/matched_hk_gt0_', tis, '_', landscape, '.tsv', sep=''))
 
@@ -76,8 +75,9 @@ for (landscape in landscapes) {
       lo$anno <- factor(lo$anno, levels=c("exp_nocat", "lof_intol"), labels=c('Expressed', 'LoF Intolerant'))
       matched <- matchit(anno ~ gtex_exp_log2, data=lo, estimand="ATT", replace=FALSE, ratio=2, caliper=0.1)
 
-      return_match_statistics(matched, tis=tis, dtype='lof_gt0')
+      return_match_statistics(matched, tis=tis, dtype='lof_gt0', ltype=landscape)
       mdata <- match.data(matched, data=lo, distance="prop.score")
       write_tsv(mdata, paste(RESDATA, '/matched_lof_gt0_', tis, '_', landscape, '.tsv', sep=''))
     }
 }
+
