@@ -8,6 +8,7 @@
 #       /dors/capra_lab/users/bentonml/cross_species_gain_loss/bin/slurm/
 ###
 
+import os
 import pandas as pd
 import numpy  as np
 import seaborn as sns
