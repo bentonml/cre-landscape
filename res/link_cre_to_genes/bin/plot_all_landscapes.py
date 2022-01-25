@@ -170,9 +170,22 @@ for landscape_def in ['loop', 'contact']:
         plt.close()
         ### end_fig
 
-<<<<<<< HEAD
         ### fig: H_boxplot of enh num by expression status for all tissues, fliers
-=======
+        fig = plt.figure(figsize=(10,6))
+        g = sns.boxplot(data=enh_by_gene_anno, order=tis_order,
+                        y='enh_num', x='tissue', hue='exp', flierprops=dict(marker='o', markersize=1),
+                        palette=['tab:gray', 'tab:blue'], showfliers=True)
+        g.set_xticklabels(tis_names, rotation=30, horizontalalignment='right')
+        g.set_ylabel('Number of CREs')
+        g.set_xlabel('')
+        g.legend(handles=g.legend_.legendHandles, bbox_to_anchor=(1.01, 1), frameon=False,
+                 labels=['Not expressed', 'Expressed'])
+        sns.despine()
+        plt.tight_layout()
+        plt.savefig(f'{RES_PATH}/all_{landscape_def}_expvenh-num_bytissue_H_boxplot_hue_fliers.{fmt}', format=fmt, dpi=400)
+        plt.close()
+        ### end_fig
+
         ### fig: H_boxplot of enh num by expression status for all tissues, # CRE > 0
         fig = plt.figure(figsize=(10,6))
         g = sns.boxplot(data=enh_by_gene_anno.query('enh_num > 0'),
@@ -186,23 +199,6 @@ for landscape_def in ['loop', 'contact']:
         sns.despine()
         plt.tight_layout()
         plt.savefig(f'{RES_PATH}/all_{landscape_def}_expvenh-num_bytissue_H_boxplot_hue_gt0.{fmt}', format=fmt, dpi=400)
-        plt.close()
-        ### end_fig
-
-        ### fig: H_boxplot of enh num by expression status for all tissues
->>>>>>> f843553c81779afbc63d77de0bb3de2f65b0a1d0
-        fig = plt.figure(figsize=(10,6))
-        g = sns.boxplot(data=enh_by_gene_anno, order=tis_order,
-                        y='enh_num', x='tissue', hue='exp', flierprops=dict(marker='o', markersize=1),
-                        palette=['tab:gray', 'tab:blue'], showfliers=True)
-        g.set_xticklabels(tis_names, rotation=30, horizontalalignment='right')
-        g.set_ylabel('Number of CREs')
-        g.set_xlabel('')
-        g.legend(handles=g.legend_.legendHandles, bbox_to_anchor=(1.01, 1), frameon=False,
-                 labels=['Not expressed', 'Expressed'])
-        sns.despine()
-        plt.tight_layout()
-        plt.savefig(f'{RES_PATH}/all_{landscape_def}_expvenh-num_bytissue_H_boxplot_hue_fliers.{fmt}', format=fmt, dpi=400)
         plt.close()
         ### end_fig
 
@@ -442,13 +438,13 @@ for landscape_def in ['loop', 'contact']:
         ### end_fig
 
         ### fig: boxplot of enh num by log2 expression for all tissues
-        nonzero = enh_by_expgene_anno.query('enh_num>0').assign(cre_bins=lambda x: pd.qcut(x['enh_num'], q=10, labels=[1,2,3,4,5,6,7,8,9,10]))
+        nonzero = all_tis_exp.query('enh_num>0').assign(cre_bins=lambda x: pd.qcut(x['enh_num'], q=10, labels=[1,2,3,4,5,6,7,8,9,10]))
         logging.info(f'CRE bin edges: {pd.qcut(nonzero.enh_num, q=10, retbins=True)[1]}')
 
         fig = plt.figure(figsize=(8,10))
         g = sns.catplot(data=nonzero, kind='box', showfliers=False,
-                        x='cre_bins', y='gtex_exp_log2', col='tissue',
-                        palette='Greys', sharex=False, col_wrap=5)
+                        x='cre_bins', y='log2_exp', order=[1,2,3,4,5,6,7,8,9,10],
+                        col='tissue', palette='Greys', sharex=False, col_wrap=5)
         facet_titles(g.axes)
         facet_x_axis(g.axes, 'CRE Decile')
         g.set_ylabels('Log2 Gene Expression')
@@ -456,7 +452,19 @@ for landscape_def in ['loop', 'contact']:
         plt.close()
         ### end_fig
 
-    ### fig/table: log stats to file
+    ### fig/table: log exp v. # CRE stats to file
+    logging.info('Correlation between log2 expression and CRE decile, test 1st v. 10th')
+    for tis_name in tis_order:
+        rho, corrp = stats.spearmanr(nonzero.query(f'tissue=="{tis_name}"').enh_num, nonzero.query(f'tissue=="{tis_name}"').log2_exp)
+        ts, p = stats.mannwhitneyu(nonzero.query(f'tissue=="{tis_name}" & cre_bins == 1').enh_num,
+                                   nonzero.query(f'tissue=="{tis_name}" & cre_bins == 10').enh_num)
+        logging.info(f'{tis_name}, 1stv10th p = {p:.3}, spearmanR = {rho:.3}, p = {corrp:.3}')
+
+    logging.info('Mean log2 expression per CRE decile')
+    logging.info(nonzero.groupby(['tissue', 'cre_bins']).log2_exp.mean())
+    ### end_fig
+
+    ### fig/table: log stats to file, kw # CRE
     for tis in tis_order:
         logging.info(f'Running enhancer number Kruskal Wallis on {tis}')
         ts, p = stats.kruskal(*[group['enh_num'].values for name, group in enh_by_expgene_anno.query(f'tissue=="{tis}" & anno!="expressed" & anno!="tis_spec" & anno!="exp_broad" & anno!="essential"').groupby('anno')])
