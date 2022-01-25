@@ -433,7 +433,7 @@ for tis in ['ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen', '
 
 f.write('\n')
 f.write('LOOP-BASED\n')
-f.write('tissue\tnum_loops\tmean_len\tmedian_len\tnum_enh\tnum_linked_enh\tprop_linked_enh\tnum_linked_gene\tprop_linked_gene\tnum_exp_gene\tnum_linked_exp_gene\tprop_exp_linked_gene\n')
+f.write('tissue\tnum_loops\tmean_len\tmedian_len\tnum_enh\tnum_linked_enh\tprop_linked_enh\tnum_linked_gene\tprop_linked_gene\tnum_exp_gene\tnum_linked_exp_gene\tprop_exp_linked_gene\tnum_linked_gene_loop\tprop_linked_gene_loop\tnum_exp_gene_loop\tnum_linked_exp_gene_loop\tprop_exp_linked_gene_loop\n')
 
 for tis in ['ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen', 'small_intestine', 'pancreas', 'liver', 'brain_prefrontal_cortex', 'brain_hippocampus']:
 
@@ -512,8 +512,15 @@ for tis in ['ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen', '
 
     # save dataframe of number of enhancers linked to each gene, only those in loops (possible to link)
     enh_num_by_gene = create_enh_num_by_gene_df(enh_to_gene, gene_anno[gene_anno.name.isin(genes_in_loops)]).drop_duplicates()
+    full_enh_num_by_gene = create_enh_num_by_gene_df(enh_to_gene, gene_anno).drop_duplicates()
 
     ### write gene stats to file
+    tot = full_enh_num_by_gene.shape[0]
+    tot_exp = full_enh_num_by_gene.query(f'exp==1').shape[0]
+    wi_enh = full_enh_num_by_gene.query(f'enh_num>0').shape[0]
+    wi_enh_exp = full_enh_num_by_gene.query(f'enh_num>0 & exp==1').shape[0]
+    f.write(f'{wi_enh}\t{wi_enh/tot:.3f}\t{tot_exp}\t{wi_enh_exp}\t{wi_enh_exp/tot_exp:.3f}\t')
+
     tot = enh_num_by_gene.shape[0]
     tot_exp = enh_num_by_gene.query(f'exp==1').shape[0]
     wi_enh = enh_num_by_gene.query(f'enh_num>0').shape[0]
