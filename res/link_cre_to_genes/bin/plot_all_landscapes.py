@@ -387,11 +387,6 @@ for landscape_def in ['loop', 'contact']:
         logging.info(enh_by_expgene_anno.query('anno=="tis_spec"').groupby('tissue').frac_tisspec_enh.median())
         logging.info('Broad')
         logging.info(enh_by_expgene_anno.query('anno=="exp_broad"').groupby('tissue').frac_tisspec_enh.median())
-
-        logging.info('Tissue-specific, CRE >0')
-        logging.info(enh_by_expgene_anno.query('anno=="tis_spec" & enh_num>0').groupby('tissue').frac_tisspec_enh.median())
-        logging.info('Broad, CRE > 0')
-        logging.info(enh_by_expgene_anno.query('anno=="exp_broad" & enh_num>0').groupby('tissue').frac_tisspec_enh.median())
         ### end_fig
 
         ### fig: boxplot of conserved enhancer bp by annotation, exp only, fliers
@@ -457,7 +452,6 @@ for landscape_def in ['loop', 'contact']:
         plt.close()
         ### end_fig
 
-
     ### fig/table: log stats to file
     for tis in tis_order:
         logging.info(f'Running enhancer number Kruskal Wallis on {tis}')
@@ -468,17 +462,6 @@ for landscape_def in ['loop', 'contact']:
         if p < 0.05:
             logging.info(f'Running post-hoc Dunn test on {tis}')
             p = sp.posthoc_dunn(enh_by_expgene_anno.query(f'tissue=="{tis}" & anno!="expressed"& anno!="tis_spec" & anno!="exp_broad" & anno!="essential"'), val_col='enh_num', group_col='anno', sort=True, p_adjust='fdr_bh')
-            logging.info(p)
-            logging.info(sp.sign_table(p))
-
-    for tis in tis_order:
-        logging.info(f'Running fraction phastcons Kruskal Wallis on {tis}')
-        ts, p = stats.kruskal(*[group['frac_phastcons'].values for name, group in enh_by_expgene_anno.query(f'tissue=="{tis}" & anno!="expressed" & anno!="tis_spec" & anno!="exp_broad" & anno!="essential"').groupby('anno')])
-        logging.info(f'{tis} test_stat = {ts}, p = {p}')
-
-        if p < 0.05:
-            logging.info(f'Running post-hoc Dunn test on {tis}')
-            p = sp.posthoc_dunn(enh_by_expgene_anno.query(f'tissue=="{tis}" & anno!="expressed"& anno!="tis_spec" & anno!="exp_broad" & anno!="essential"'), val_col='frac_phastcons', group_col='anno', sort=True, p_adjust='fdr_bh')
             logging.info(p)
             logging.info(sp.sign_table(p))
     ### end_fig
