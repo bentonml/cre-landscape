@@ -171,7 +171,7 @@ for landscape_def in ['loop', 'contact']:
         plt.close()
         ### end_fig
 
-        ### fig: H_boxplot of enh num by expression status for all tissues
+        ### fig: H_boxplot of enh num by expression status for all tissues, fliers
         fig = plt.figure(figsize=(10,6))
         g = sns.boxplot(data=enh_by_gene_anno,
                         y='enh_num', x='tissue', hue='exp', flierprops=dict(marker='o', markersize=1),
@@ -203,7 +203,7 @@ for landscape_def in ['loop', 'contact']:
         plt.close()
         ### end_fig
 
-        ### fig: boxplot of enh num by expression status for all tissues
+        ### fig: boxplot of enh num by expression status for all tissues, w. stripplot
         fig = plt.figure(figsize=(8,10))
         g = sns.boxplot(data=enh_by_gene_anno,
                         x='enh_num', y='tissue', hue='exp',
