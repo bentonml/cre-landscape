@@ -40,7 +40,6 @@ rc = {'font.size':14, 'axes.titlesize':16,'axes.labelsize':14, 'legend.fontsize'
 
 # set up log file to record data about run
 logging.basicConfig(filename=f'{RES_PATH}/README', level=logging.INFO)
-logging.info('Running on %s with peakachu loops.', str(date.today()))
 
 def facet_titles(axes):
     ax = axes.flatten()
@@ -61,7 +60,7 @@ def facet_x_axis(axes, title):
 
 def read_data(landscape_def):
     df_lst = []
-    for tis in ['ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen', 'small_intestine', 'pancreas', 'liver', 'brain_prefrontal_cortex', 'brain_hippocampus']:
+    for tis in tis_order:
         if landscape_def == 'contact':
             infile = f'{EXP_DATA_PATH}/{tis}_gene_with_enh-count_frac-enh-spec_hicQ05-linked.tsv'
         elif landscape_def == 'loop':
@@ -142,7 +141,7 @@ for landscape_def in ['loop', 'contact']:
         ### fig: boxplot of enh num by expression status for all tissues
         fig = plt.figure(figsize=(8,10))
         g = sns.boxplot(data=enh_by_gene_anno,
-                        x='enh_num', y='tissue', hue='exp',
+                        x='enh_num', y='tissue', hue='exp', order=tis_order,
                         palette=['tab:gray', 'tab:blue'], showfliers=False)
         g.set_yticklabels(tis_names)
         g.set_xlabel('Number of CREs')
@@ -158,7 +157,7 @@ for landscape_def in ['loop', 'contact']:
         ### fig: H_boxplot of enh num by expression status for all tissues
         fig = plt.figure(figsize=(10,6))
         g = sns.boxplot(data=enh_by_gene_anno,
-                        y='enh_num', x='tissue', hue='exp',
+                        y='enh_num', x='tissue', hue='exp', order=tis_order,
                         palette=['tab:gray', 'tab:blue'], showfliers=False)
         g.set_xticklabels(tis_names, rotation=30, horizontalalignment='right')
         g.set_ylabel('Number of CREs')
@@ -171,9 +170,29 @@ for landscape_def in ['loop', 'contact']:
         plt.close()
         ### end_fig
 
+<<<<<<< HEAD
         ### fig: H_boxplot of enh num by expression status for all tissues, fliers
+=======
+        ### fig: H_boxplot of enh num by expression status for all tissues, # CRE > 0
         fig = plt.figure(figsize=(10,6))
-        g = sns.boxplot(data=enh_by_gene_anno,
+        g = sns.boxplot(data=enh_by_gene_anno.query('enh_num > 0'),
+                        y='enh_num', x='tissue', hue='exp', order=tis_order,
+                        palette=['tab:gray', 'tab:blue'], showfliers=False)
+        g.set_xticklabels(tis_names, rotation=30, horizontalalignment='right')
+        g.set_ylabel('Number of CREs')
+        g.set_xlabel('')
+        g.legend(handles=g.legend_.legendHandles, bbox_to_anchor=(1.01, 1), frameon=False,
+                 labels=['Not expressed', 'Expressed'])
+        sns.despine()
+        plt.tight_layout()
+        plt.savefig(f'{RES_PATH}/all_{landscape_def}_expvenh-num_bytissue_H_boxplot_hue_gt0.{fmt}', format=fmt, dpi=400)
+        plt.close()
+        ### end_fig
+
+        ### fig: H_boxplot of enh num by expression status for all tissues
+>>>>>>> f843553c81779afbc63d77de0bb3de2f65b0a1d0
+        fig = plt.figure(figsize=(10,6))
+        g = sns.boxplot(data=enh_by_gene_anno, order=tis_order,
                         y='enh_num', x='tissue', hue='exp', flierprops=dict(marker='o', markersize=1),
                         palette=['tab:gray', 'tab:blue'], showfliers=True)
         g.set_xticklabels(tis_names, rotation=30, horizontalalignment='right')
@@ -189,7 +208,7 @@ for landscape_def in ['loop', 'contact']:
 
         ### fig: H split violinplot of enh num by expression status for all tissues
         fig = plt.figure(figsize=(10,6))
-        g = sns.violinplot(data=enh_by_gene_anno,
+        g = sns.violinplot(data=enh_by_gene_anno, order=tis_order,
                         y='enh_num', x='tissue', hue='exp', inner="quart", linewidth=1, cut=0,
                         palette=['tab:gray', 'tab:blue'], split=True)
         g.set_xticklabels(tis_names, rotation=30, horizontalalignment='right')
@@ -205,10 +224,10 @@ for landscape_def in ['loop', 'contact']:
 
         ### fig: boxplot of enh num by expression status for all tissues, w. stripplot
         fig = plt.figure(figsize=(8,10))
-        g = sns.boxplot(data=enh_by_gene_anno,
+        g = sns.boxplot(data=enh_by_gene_anno, order=tis_order,
                         x='enh_num', y='tissue', hue='exp',
                         palette=['tab:gray', 'tab:blue'], showfliers=False)
-        g = sns.stripplot(data=enh_by_gene_anno,
+        g = sns.stripplot(data=enh_by_gene_anno, order=tis_order,
                         x='enh_num', y='tissue', hue='exp', dodge=True, size=1,
                         palette=['.3', '.3'])
         g.set_yticklabels(tis_names)
@@ -232,6 +251,11 @@ for landscape_def in ['loop', 'contact']:
     logging.info(all_tis[all_tis['exp']==0].groupby('tissue').enh_num.median())
     logging.info('Expressed')
     logging.info(all_tis[all_tis['exp']==1].groupby('tissue').enh_num.median())
+
+    logging.info('Not expressed, CRE >0')
+    logging.info(all_tis[(all_tis['exp']==0) & (all_tis.enh_num>0)].groupby('tissue').enh_num.median())
+    logging.info('Expressed, CRE > 0')
+    logging.info(all_tis[(all_tis['exp']==1) & (all_tis.enh_num>0)].groupby('tissue').enh_num.median())
     ### end_fig
     ### \\
 
@@ -259,7 +283,7 @@ for landscape_def in ['loop', 'contact']:
         ### fig: boxplot of all tissues by frac-tissue-spec enhancers, hue = exp type
         fig = plt.figure(figsize=(8,10))
         g = sns.boxplot(data=enh_by_expgene_anno.query('anno=="tis_spec" | anno=="exp_broad"'),
-                           x='frac_tisspec_enh', y='tissue', hue='anno',
+                           x='frac_tisspec_enh', y='tissue', hue='anno', order=tis_order,
                            palette={'exp_broad':'#fee5d9', 'tis_spec':'#de2d26'},
                            showfliers=True, fliersize=1)
         g.set_yticklabels(tis_names)
@@ -276,7 +300,7 @@ for landscape_def in ['loop', 'contact']:
         ### fig: boxplot of all tissues by frac-tissue-spec enhancers, hue = exp type
         fig = plt.figure(figsize=(8,10))
         g = sns.boxplot(data=enh_by_expgene_anno.query('anno=="tis_spec" | anno=="exp_broad"'),
-                           x='num_tisspec_enh', y='tissue', hue='anno',
+                           x='num_tisspec_enh', y='tissue', hue='anno', order=tis_order,
                            palette={'exp_broad':'#fee5d9', 'tis_spec':'#de2d26'},
                            showfliers=True, fliersize=1)
         g.set_yticklabels(tis_names)
@@ -293,7 +317,7 @@ for landscape_def in ['loop', 'contact']:
         ### fig: boxplot of all tissues by number of enhancers, hue = exp type
         fig = plt.figure(figsize=(8,10))
         g = sns.boxplot(data=enh_by_expgene_anno.query('anno=="tis_spec" | anno=="exp_broad"'),
-                           x='enh_num', y='tissue', hue='anno',
+                           x='enh_num', y='tissue', hue='anno', order=tis_order,
                            palette={'exp_broad':'#fee5d9', 'tis_spec':'#de2d26'},
                            showfliers=False, fliersize=1)
         g.set_yticklabels(tis_names)
@@ -310,7 +334,7 @@ for landscape_def in ['loop', 'contact']:
         ### fig: H boxplot of all tissues by frac-tissue-spec enhancers, hue = exp type
         fig = plt.figure(figsize=(10,6))
         g = sns.boxplot(data=enh_by_expgene_anno.query('anno=="tis_spec" | anno=="exp_broad"'),
-                        y='frac_tisspec_enh', x='tissue', hue='anno',
+                        y='frac_tisspec_enh', x='tissue', hue='anno', order=tis_order,
                         palette={'exp_broad':'#fee5d9', 'tis_spec':'#de2d26'},
                         showfliers=False)
         g.set_xticklabels(tis_names, rotation=30, horizontalalignment='right')
@@ -326,7 +350,7 @@ for landscape_def in ['loop', 'contact']:
 
         ### fig: H boxplot of all tissues by frac-tissue-spec enhancers, hue = exp type, fliers
         fig = plt.figure(figsize=(10,6))
-        g = sns.boxplot(data=enh_by_expgene_anno.query('anno=="tis_spec" | anno=="exp_broad"'),
+        g = sns.boxplot(data=enh_by_expgene_anno.query('anno=="tis_spec" | anno=="exp_broad"'), order=tis_order,
                         y='frac_tisspec_enh', x='tissue', hue='anno', flierprops=dict(marker='o', markersize=1),
                         palette={'exp_broad':'#fee5d9', 'tis_spec':'#de2d26'},
                         showfliers=True)
@@ -344,7 +368,7 @@ for landscape_def in ['loop', 'contact']:
         ### fig: H split violinplot of enh num by expression status for all tissues
         fig = plt.figure(figsize=(10,6))
         g = sns.violinplot(data=enh_by_expgene_anno.query('anno=="tis_spec" | anno=="exp_broad"'),
-                        y='frac_tisspec_enh', x='tissue', hue='anno', inner="quart", linewidth=1,
+                        y='frac_tisspec_enh', x='tissue', hue='anno', order=tis_order, inner="quart", linewidth=1,
                         palette={'exp_broad':'#fee5d9', 'tis_spec':'#de2d26'}, split=True)
         g.set_xticklabels(tis_names, rotation=30, horizontalalignment='right')
         g.set_ylabel('Fraction tissue-specific CREs')
@@ -357,11 +381,23 @@ for landscape_def in ['loop', 'contact']:
         plt.close()
         ### end_fig
 
+        ### fig/table: MWU test of number of enhancers exp vs. not
+        for tis_name in tis_order:
+            ts, p = stats.mannwhitneyu(enh_by_expgene_anno.query('anno=="tis_spec"').query(f'tissue=="{tis_name}"').frac_tisspec_enh,
+                                       enh_by_expgene_anno.query('anno=="exp_broad"').query(f'tissue=="{tis_name}"').frac_tisspec_enh)
+            logging.info(f'{tis_name}, p = {p:.3}, corrected = {p < (0.05/10)}')
+
+        logging.info('Tissue-specific')
+        logging.info(enh_by_expgene_anno.query('anno=="tis_spec"').groupby('tissue').frac_tisspec_enh.median())
+        logging.info('Broad')
+        logging.info(enh_by_expgene_anno.query('anno=="exp_broad"').groupby('tissue').frac_tisspec_enh.median())
+        ### end_fig
+
         ### fig: boxplot of conserved enhancer bp by annotation, exp only, fliers
         fig = plt.figure(figsize=(8,10))
         g = sns.boxplot(x='frac_phastcons', hue='anno', y='tissue', data=enh_by_expgene_anno.query('anno=="hk" | anno=="lof_intol" | anno=="exp_nocat"'),
                         palette=['tab:green', 'tab:orange', 'tab:blue'],
-                        hue_order=['hk', 'lof_intol', 'exp_nocat'],
+                        hue_order=['hk', 'lof_intol', 'exp_nocat'], order=tis_order,
                         showfliers=True, fliersize=1)
         g.set_yticklabels(tis_names)
         g.set_xlabel('Fraction of conserved CRE bp')
@@ -377,7 +413,7 @@ for landscape_def in ['loop', 'contact']:
         fig = plt.figure(figsize=(8,10))
         g = sns.boxplot(x='enh_num', hue='anno', y='tissue', data=enh_by_expgene_anno.query('anno=="hk" | anno=="lof_intol" | anno=="exp_nocat"'),
                         palette=['tab:green', 'tab:orange', 'tab:blue'],
-                        hue_order=['hk', 'lof_intol', 'exp_nocat'],
+                        hue_order=['hk', 'lof_intol', 'exp_nocat'], order=tis_order,
                         showfliers=False, fliersize=1)
         g.set_yticklabels(tis_names)
         g.set_xlabel('Number of CREs')
@@ -393,7 +429,7 @@ for landscape_def in ['loop', 'contact']:
         fig = plt.figure(figsize=(8,10))
         g = sns.boxplot(x='enh_num', hue='anno', y='tissue', data=enh_by_expgene_anno.query('anno=="hk" | anno=="essential" | anno=="lof_intol" | anno=="exp_nocat"'),
                         palette=['tab:green', 'tab:red', 'tab:orange', 'tab:blue'],
-                        hue_order=['hk', 'essential', 'lof_intol', 'exp_nocat'],
+                        hue_order=['hk', 'essential', 'lof_intol', 'exp_nocat'], order=tis_order,
                         showfliers=False, fliersize=1)
         g.set_yticklabels(tis_names)
         g.set_xlabel('Number of CREs')
@@ -420,7 +456,6 @@ for landscape_def in ['loop', 'contact']:
         plt.close()
         ### end_fig
 
-
     ### fig/table: log stats to file
     for tis in tis_order:
         logging.info(f'Running enhancer number Kruskal Wallis on {tis}')
@@ -429,22 +464,9 @@ for landscape_def in ['loop', 'contact']:
         logging.info(f'{tis} test_stat = {ts}, p = {p}')
 
         if p < 0.05:
-            for tis in tis_order:
-                logging.info(f'Running post-hoc Dunn test on {tis}')
-                p = sp.posthoc_dunn(enh_by_expgene_anno.query(f'tissue=="{tis}" & anno!="expressed"& anno!="tis_spec" & anno!="exp_broad" & anno!="essential"'), val_col='enh_num', group_col='anno', sort=True, p_adjust='fdr_bh')
-                logging.info(p)
-                logging.info(sp.sign_table(p))
-
-    for tis in tis_order:
-        logging.info(f'Running fraction phastcons Kruskal Wallis on {tis}')
-        ts, p = stats.kruskal(*[group['frac_phastcons'].values for name, group in enh_by_expgene_anno.query(f'tissue=="{tis}" & anno!="expressed" & anno!="tis_spec" & anno!="exp_broad" & anno!="essential"').groupby('anno')])
-        logging.info(f'{tis} test_stat = {ts}, p = {p}')
-
-        if p < 0.05:
-            for tis in tis_order:
-                logging.info(f'Running post-hoc Dunn test on {tis}')
-                p = sp.posthoc_dunn(enh_by_expgene_anno.query(f'tissue=="{tis}" & anno!="expressed"& anno!="tis_spec" & anno!="exp_broad" & anno!="essential"'), val_col='frac_phastcons', group_col='anno', sort=True, p_adjust='fdr_bh')
-                logging.info(p)
-                logging.info(sp.sign_table(p))
+            logging.info(f'Running post-hoc Dunn test on {tis}')
+            p = sp.posthoc_dunn(enh_by_expgene_anno.query(f'tissue=="{tis}" & anno!="expressed"& anno!="tis_spec" & anno!="exp_broad" & anno!="essential"'), val_col='enh_num', group_col='anno', sort=True, p_adjust='fdr_bh')
+            logging.info(p)
+            logging.info(sp.sign_table(p))
     ### end_fig
     ### \\
