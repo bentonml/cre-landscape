@@ -14,6 +14,9 @@ from pybedtools import BedTool
 from datetime import date
 from scipy import stats
 
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 ### // constants and paths // ###
 DATA_PATH = '../../../dat'           # relative to current dir
 GEN_DATA_PATH = '../../../../data'
@@ -26,6 +29,11 @@ f = open(f'{RES_PATH}/stats_by_tissue_peakachuloop_{str(date.today())}.txt',"w")
 tisspec_thresh = 0.6  # for tissue-specificity metric
 thresh='Q05'          # for hic q-values
 t = 0.05              # for hic q-values
+
+# plotting options
+fmt='pdf'
+rc = {'font.size':14, 'axes.titlesize':16,'axes.labelsize':14, 'legend.fontsize': 14,
+      'xtick.labelsize': 14, 'ytick.labelsize': 14}
 
 tis_to_tad = {'ovary':'Ovary_Schmitt2016-raw_TADs_hg19from38.bed',
               'psoas_muscle':'Muscle_Psoas_Donor-PO1-raw_TADs.txt',
@@ -184,7 +192,7 @@ def create_hic_df_anno(hic_pairs_df, rec, rgc, cec, cgc):
     ''' Create full dataframe with all overlapping annotations. Fills in NaN counts
     with 0 since these are the locations with no overlapping annotations.
     '''
-    res = (hic_pairs_df.drop(columns=['obs_count', 'q', 'distance', 'rwindow', 'cwindow'])
+    res = (hic_pairs_df.drop(columns=['obs_count', 'distance', 'rwindow', 'cwindow'])
                        .merge(rec, how='left', validate='m:1')
                        .merge(rgc, how='left', validate='m:1')
                        .merge(cec, how='left', validate='m:1')
@@ -403,6 +411,18 @@ for tis in ['ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen', '
 
     # create full dataframe with all overlapping annotations
     hic_pairs_anno = create_hic_df_anno(hic_pairs, row_enh_count, row_gene_count, col_enh_count, col_gene_count)
+
+    ### fig: edcf of hic interactions with annotations
+    map_dict = {0:'No annotation', 1:'Annotion in both anchors', 2: 'CRE to gene annotation'}
+    hic_cdf = hic_pairs_anno.assign(intanno=lambda x: np.where(((x.re_count > 0) & (x.cg_count > 0)) | ((x.rg_count > 0) & (x.ce_count > 0)), 2,
+                                    np.where((x.re_count == 0) & (x.cg_count == 0) & (x.rg_count == 0) & (x.ce_count == 0), 0, 1)))
+    hic_cdf["Type"] = hic_cdf["intanno"].map(map_dict)
+    with sns.plotting_context("paper", rc=rc):
+        g = sns.displot(x='q', hue='Type', data=hic_cdf, kind='ecdf', palette='Reds')
+        sns.move_legend(g, 'lower right')
+        plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_hic-anno_ecdfplot.{fmt}', format=fmt, dpi=400)
+        plt.close()
+    ### end_fig
 
     ### assign enhancers to targets
     enh_to_gene = (pd.concat([hic_pairs_anno.query('re_count > 0 & cg_count > 0').merge(col_gene).merge(row_enh).rename(columns={'cg_count':'tss'}).drop(columns=['rg_count']),
