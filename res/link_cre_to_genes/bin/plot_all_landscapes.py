@@ -438,17 +438,17 @@ for landscape_def in ['loop', 'contact']:
         ### end_fig
 
         ### fig: boxplot of enh num by log2 expression for all tissues
-        nonzero = all_tis_exp.query('enh_num>0').assign(cre_bins=lambda x: pd.qcut(x['enh_num'], q=10, labels=[1,2,3,4,5,6,7,8,9,10]))
-        logging.info(f'CRE bin edges: {pd.qcut(nonzero.enh_num, q=10, retbins=True)[1]}')
+        nonzero = all_tis_exp.assign(exp_bins=lambda x: pd.qcut(x['log2_exp'], q=4, labels=[1,2,3,4]))
+        logging.info(f'Exp bin edges: {pd.qcut(nonzero.log2_exp, q=4, retbins=True)[1]}')
 
         fig = plt.figure(figsize=(8,10))
         g = sns.catplot(data=nonzero, kind='box', showfliers=False,
-                        x='cre_bins', y='log2_exp', order=[1,2,3,4,5,6,7,8,9,10],
-                        col='tissue', palette='Greys', sharex=False, col_wrap=5)
+                        x='exp_bins', y='enh_num', order=[1,2,3,4],
+                        col='tissue', palette='Greys', sharey=False, col_wrap=5)
         facet_titles(g.axes)
-        facet_x_axis(g.axes, 'CRE Decile')
-        g.set_ylabels('Log2 Gene Expression')
-        plt.savefig(f'{RES_PATH}/all_{landscape_def}_enh-numXlog2exp_bytissue_gt0_boxplot.{fmt}', format=fmt, dpi=400)
+        facet_x_axis(g.axes, 'Expression Quartile')
+        g.set_ylabels('# CREs')
+        plt.savefig(f'{RES_PATH}/all_{landscape_def}_enh-numXlog2exp_bytissue_boxplot.{fmt}', format=fmt, dpi=400)
         plt.close()
         ### end_fig
 
@@ -456,12 +456,12 @@ for landscape_def in ['loop', 'contact']:
     logging.info('Correlation between log2 expression and CRE decile, test 1st v. 10th')
     for tis_name in tis_order:
         rho, corrp = stats.spearmanr(nonzero.query(f'tissue=="{tis_name}"').enh_num, nonzero.query(f'tissue=="{tis_name}"').log2_exp)
-        ts, p = stats.mannwhitneyu(nonzero.query(f'tissue=="{tis_name}" & cre_bins == 1').enh_num,
-                                   nonzero.query(f'tissue=="{tis_name}" & cre_bins == 10').enh_num)
+        ts, p = stats.mannwhitneyu(nonzero.query(f'tissue=="{tis_name}" & exp_bins == 1').enh_num,
+                                   nonzero.query(f'tissue=="{tis_name}" & exp_bins == 4').enh_num)
         logging.info(f'{tis_name}, 1stv10th p = {p:.3}, spearmanR = {rho:.3}, p = {corrp:.3}')
 
-    logging.info('Mean log2 expression per CRE decile')
-    logging.info(nonzero.groupby(['tissue', 'cre_bins']).log2_exp.mean())
+    logging.info('Median # CRE per CRE decile')
+    logging.info(nonzero.groupby(['tissue', 'cre_bins']).enh_num.median().to_string())
     ### end_fig
 
     ### fig/table: log stats to file, kw # CRE
