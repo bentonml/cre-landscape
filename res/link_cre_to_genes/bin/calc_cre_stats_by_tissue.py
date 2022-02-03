@@ -418,9 +418,9 @@ for tis in ['ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen', '
                                     np.where((x.re_count == 0) & (x.cg_count == 0) & (x.rg_count == 0) & (x.ce_count == 0), 0, 1)))
     hic_cdf["Type"] = hic_cdf["intanno"].map(map_dict)
     with sns.plotting_context("paper", rc=rc):
-        g = sns.displot(x='q', hue='Type', data=hic_cdf, kind='ecdf', palette='Reds')
-        sns.move_legend(g, 'lower right')
-        plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_hic-anno_ecdfplot.{fmt}', format=fmt, dpi=400)
+        g = sns.displot(x='q', hue='Type', data=hic_cdf, kind='ecdf', palette='Reds', hue_order=['No annotation', 'Annotion in both anchors','CRE to gene annotation'])
+        sns.move_legend(g, 'center right')
+        plt.savefig(f'{RES_PATH}/fig/{str(date.today())}/{tis}_hicQ05_anno_ecdfplot.{fmt}', format=fmt, dpi=400)
         plt.close()
     ### end_fig
 
