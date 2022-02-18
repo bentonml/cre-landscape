@@ -25,7 +25,7 @@ landscape_def = ['loop', 'contact']
 tis_order = ['ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen',
              'small_intestine', 'pancreas', 'liver', 'brain_prefrontal_cortex', 'brain_hippocampus']
 
-def read_data(landscape_def):
+def read_data(landscape_def, EXP_DATA_PATH):
     df_lst = []
     for tis in tis_order:
         if landscape_def == 'contact':
@@ -47,7 +47,7 @@ def read_data(landscape_def):
 
 for landscape_def in ['loop', 'contact']:
     ### // create dataframe of enhancer number by gene with all tissues \\ ###
-    all_tis = read_data(landscape_def)
+    all_tis = read_data(landscape_def, EXP_DAT_PATH)
     all_tis_exp = all_tis[all_tis['exp']==1].copy(deep=True)
 
     # create expressed-only version
@@ -69,10 +69,10 @@ for landscape_def in ['loop', 'contact']:
         ts = (enh_by_expgene_anno
                 .query(f'tissue=="{tis}" & (anno=="tis_spec" | anno=="exp_broad")')
                 .filter(['anno', 'gtex_exp_log2', 'target_gene', 'enh_num']))
-        ts.to_csv(f'{OUT_DAT_PATH}/{tis}_{landscape}.tsv', sep='\t', index=False, header=True)
+        ts.to_csv(f'{OUT_DAT_PATH}/{tis}_{landscape_def}.tsv', sep='\t', index=False, header=True)
 
         # calculate dataframe for each tissue, CRE > 0
         ts = (enh_by_expgene_anno
                 .query(f'tissue=="{tis}" & enh_num>0 & (anno=="tis_spec" | anno=="exp_broad")')
                 .filter(['anno', 'gtex_exp_log2', 'target_gene', 'enh_num']))
-        ts.to_csv(f'{OUT_DAT_PATH}/gt0_{tis}_{landscape}.tsv', sep='\t', index=False, header=True)
+        ts.to_csv(f'{OUT_DAT_PATH}/gt0_{tis}_{landscape_def}.tsv', sep='\t', index=False, header=True)
