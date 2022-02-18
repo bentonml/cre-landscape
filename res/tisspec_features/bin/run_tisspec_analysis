@@ -1,0 +1,16 @@
+#!/bin/bash
+# marylaurenbenton, 2022
+
+ml GCC/10.2.0  OpenMPI/4.0.5  R/4.0.5 Anaconda3
+source activate enh_gain-loss
+
+mkdir -p ../fig ../res
+
+# create landscapes ready for matchit input
+python create_landscapes_by_exp_patterns.py
+
+# use matchit to match on expression level
+Rscript perform_matching.R > ../dat/README_`date +%F`
+
+# visualize the results
+python plot_tisspec_landscapes.py > ../res/README_`date +%F`
