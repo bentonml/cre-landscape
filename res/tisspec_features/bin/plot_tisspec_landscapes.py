@@ -71,115 +71,119 @@ def read_matched_data(tis, landscape_type, dtype):
     return pd.read_table(f'{MAT_DAT_PATH}/matched_{dtype}{tis}_{landscape_type}.tsv', sep='\t')
 ### \\
 
-for landscape_def in ['loop', 'contact']:
-    # create dataframe of enhancer number by gene with all tissues
-    all_tis = read_data(landscape_def)
-    all_tis_exp = all_tis[all_tis['exp']==1]
+for cretype in ['', 'gt0_']:
+    for landscape_def in ['loop', 'contact']:
+        # create dataframe of enhancer number by gene with all tissues
+        all_tis = read_data(landscape_def)
+        all_tis_exp = all_tis[all_tis['exp']==1]
 
-    ### // full matched sets \\ ###
-    df_lst = []
-    for tis in tis_order:
-        dd = (read_matched_data(tis=tis, landscape_type=landscape_def, dtype='')
-                .merge(all_tis_exp.query(f'tissue=="{tis}"'), how='left')
-                .filter(['tissue', 'anno', 'gtex_exp_log2', 'target_gene', 'enh_num', 'frac_tisspec_enh', 'frac_phastcons'])
-             )
-        df_lst.append(dd)
-    all_tis_merged = pd.concat(df_lst)
+        ### // full matched sets \\ ###
+        df_lst = []
+        for tis in tis_order:
+            dd = (read_matched_data(tis=tis, landscape_type=landscape_def, dtype=cretype)
+                    .merge(all_tis_exp.query(f'tissue=="{tis}"'), how='left')
+                    .filter(['tissue', 'anno', 'gtex_exp_log2', 'target_gene', 'enh_num', 'frac_tisspec_enh', 'frac_phastcons'])
+                 )
+            df_lst.append(dd)
+        all_tis_merged = pd.concat(df_lst)
 
-    logging.info(all_tis_merged.groupby('tissue').anno.value_counts())
-    ### \\
+        logging.info(all_tis_merged.groupby('tissue').anno.value_counts())
+        ### \\
 
-    with sns.plotting_context("paper", rc=rc):
-        ### fig: H boxplot of all tissues by frac-tissue-spec enhancers, hue = exp type
-        fig = plt.figure(figsize=(10,6))
-        g = sns.boxplot(data=all_tis_merged,
-                        y='frac_tisspec_enh', x='tissue', hue='anno', order=tis_order,
-                        palette={'Broad':'#fee5d9', 'Tissue-specific':'#de2d26'},
-                        showfliers=False)
-        g = sns.stripplot(data=all_tis_merged, x='tissue', y='frac_tisspec_enh',
-                          hue='anno', dodge=True, order=tis_order, palette=['.3', '.3'])
-        g.set_xticklabels(tis_names, rotation=30, horizontalalignment='right')
-        g.set_ylabel('Fraction tissue-specific CREs')
-        g.set_xlabel('')
-        g.legend(handles=g.legend_.legendHandles[0:2], frameon=False, bbox_to_anchor=(1, 1.15))
-        sns.despine()
-        plt.tight_layout()
-        plt.savefig(f'{RES_PATH}/all_{landscape_def}_frac-tisspec-enhXtisspec_bytissue_boxplot_withpoints.{fmt}', format=fmt, dpi=400)
-        plt.close()
+        with sns.plotting_context("paper", rc=rc):
+            ### fig: H boxplot of all tissues by frac-tissue-spec enhancers, hue = exp type
+            fig = plt.figure(figsize=(10,6))
+            g = sns.boxplot(data=all_tis_merged,
+                            y='frac_tisspec_enh', x='tissue', hue='anno', order=tis_order,
+                            palette={'Broad':'#fee5d9', 'Tissue-specific':'#de2d26'},
+                            showfliers=False)
+            g = sns.stripplot(data=all_tis_merged, x='tissue', y='frac_tisspec_enh',
+                              hue='anno', dodge=True, order=tis_order, palette=['.3', '.3'])
+            g.set_xticklabels(tis_names, rotation=30, horizontalalignment='right')
+            g.set_ylabel('Fraction tissue-specific CREs')
+            g.set_xlabel('')
+            g.legend(handles=g.legend_.legendHandles[0:2], frameon=False, bbox_to_anchor=(1, 1.15))
+            sns.despine()
+            plt.tight_layout()
+            plt.savefig(f'{RES_PATH}/all_{landscape_def}_{cretype}frac-tisspec-enhXtisspec_bytissue_boxplot_withpoints.{fmt}', format=fmt, dpi=400)
+            plt.close()
+            ### end_fig
+
+            ### fig: H boxplot of all tissues by frac-tissue-spec enhancers, hue = exp type
+            fig = plt.figure(figsize=(10,6))
+            g = sns.boxplot(data=all_tis_merged,
+                            y='frac_tisspec_enh', x='tissue', hue='anno', order=tis_order,
+                            palette={'Broad':'#fee5d9', 'Tissue-specific':'#de2d26'},
+                            showfliers=False)
+            g.set_xticklabels(tis_names, rotation=30, horizontalalignment='right')
+            g.set_ylabel('Fraction tissue-specific CREs')
+            g.set_xlabel('')
+            g.legend(handles=g.legend_.legendHandles[0:2], frameon=False, bbox_to_anchor=(1, 1.15))
+            sns.despine()
+            plt.tight_layout()
+            plt.savefig(f'{RES_PATH}/all_{landscape_def}_{cretype}frac-tisspec-enhXtisspec_bytissue_boxplot.{fmt}', format=fmt, dpi=400)
+            plt.close()
+            ### end_fig
+
+            ### fig: H boxplot of all tissues by frac-tissue-spec enhancers, hue = exp type
+            fig = plt.figure(figsize=(10,6))
+            g = sns.boxplot(data=all_tis_merged,
+                            y='enh_num', x='tissue', hue='anno', order=tis_order,
+                            palette={'Broad':'#fee5d9', 'Tissue-specific':'#de2d26'},
+                            showfliers=False)
+            g.set_xticklabels(tis_names, rotation=30, horizontalalignment='right')
+            g.set_ylabel('# of CREs')
+            g.set_xlabel('')
+            g.legend(handles=g.legend_.legendHandles, frameon=False, bbox_to_anchor=(1, 1.15))
+            sns.despine()
+            plt.tight_layout()
+            plt.savefig(f'{RES_PATH}/all_{landscape_def}_{cretype}num-enhXtisspec_bytissue_boxplot.{fmt}', format=fmt, dpi=400)
+            plt.close()
+            ### end_fig
+
+            ### fig: H boxplot of all tissues by frac-tissue-spec enhancers, hue = exp type
+            fig = plt.figure(figsize=(10,6))
+            g = sns.boxplot(data=all_tis_merged,
+                            y='frac_phastcons', x='tissue', hue='anno', order=tis_order,
+                            palette={'Broad':'#fee5d9', 'Tissue-specific':'#de2d26'},
+                            showfliers=False)
+            g.set_xticklabels(tis_names, rotation=30, horizontalalignment='right')
+            g.set_ylabel('Fraction of conserved CRE bp')
+            g.set_xlabel('')
+            g.legend(handles=g.legend_.legendHandles, frameon=False, bbox_to_anchor=(1, 1.15))
+            sns.despine()
+            plt.tight_layout()
+            plt.savefig(f'{RES_PATH}/all_{landscape_def}_{cretype}frac-phastconsXtisspec_bytissue_H_boxplot_hue.{fmt}', format=fmt, dpi=400)
+            plt.close()
+            ### end_fig
+
+
+        ### fig/table: MWU test of fraction of tissue-specific enhancers
+        logging.info(f'MWU test of fraction of tissue-specific enhancers, {cretype}{landscape_def}')
+        for tis_name in tis_order:
+            ts, p = stats.mannwhitneyu(all_tis_merged.query('anno=="Tissue-specific"').query(f'tissue=="{tis_name}"').frac_tisspec_enh,
+                                       all_tis_merged.query('anno=="Broad"').query(f'tissue=="{tis_name}"').frac_tisspec_enh)
+            logging.info(f'{tis_name}, p = {p:.3}')
+
+        logging.info(all_tis_merged.groupby(['tissue', 'anno']).frac_tisspec_enh.median())
         ### end_fig
 
-        ### fig: H boxplot of all tissues by frac-tissue-spec enhancers, hue = exp type
-        fig = plt.figure(figsize=(10,6))
-        g = sns.boxplot(data=all_tis_merged,
-                        y='frac_tisspec_enh', x='tissue', hue='anno', order=tis_order,
-                        palette={'Broad':'#fee5d9', 'Tissue-specific':'#de2d26'},
-                        showfliers=False)
-        g.set_xticklabels(tis_names, rotation=30, horizontalalignment='right')
-        g.set_ylabel('Fraction tissue-specific CREs')
-        g.set_xlabel('')
-        g.legend(handles=g.legend_.legendHandles[0:2], frameon=False, bbox_to_anchor=(1, 1.15))
-        sns.despine()
-        plt.tight_layout()
-        plt.savefig(f'{RES_PATH}/all_{landscape_def}_frac-tisspec-enhXtisspec_bytissue_boxplot.{fmt}', format=fmt, dpi=400)
-        plt.close()
+        ### fig/table: MWU test of number of enhancers
+        logging.info(f'MWU test of number of enhancers, {cretype}{landscape_def}')
+        for tis_name in tis_order:
+            ts, p = stats.mannwhitneyu(all_tis_merged.query('anno=="Tissue-specific"').query(f'tissue=="{tis_name}"').enh_num,
+                                       all_tis_merged.query('anno=="Broad"').query(f'tissue=="{tis_name}"').enh_num)
+            logging.info(f'{tis_name}, p = {p:.3}')
+
+        logging.info(all_tis_merged.groupby(['tissue', 'anno']).enh_num.median())
         ### end_fig
 
-        ### fig: H boxplot of all tissues by frac-tissue-spec enhancers, hue = exp type
-        fig = plt.figure(figsize=(10,6))
-        g = sns.boxplot(data=all_tis_merged,
-                        y='enh_num', x='tissue', hue='anno', order=tis_order,
-                        palette={'Broad':'#fee5d9', 'Tissue-specific':'#de2d26'},
-                        showfliers=False)
-        g.set_xticklabels(tis_names, rotation=30, horizontalalignment='right')
-        g.set_ylabel('# of CREs')
-        g.set_xlabel('')
-        g.legend(handles=g.legend_.legendHandles, frameon=False, bbox_to_anchor=(1, 1.15))
-        sns.despine()
-        plt.tight_layout()
-        plt.savefig(f'{RES_PATH}/all_{landscape_def}_num-enhXtisspec_bytissue_boxplot.{fmt}', format=fmt, dpi=400)
-        plt.close()
+        ### fig/table: MWU test of fraction of phastcons bp (in cre)
+        logging.info(f'MWU test of fraction of phastcons bp, {cretype}{landscape_def}')
+        for tis_name in tis_order:
+            ts, p = stats.mannwhitneyu(all_tis_merged.query('anno=="Tissue-specific"').query(f'tissue=="{tis_name}"').frac_phastcons,
+                                       all_tis_merged.query('anno=="Broad"').query(f'tissue=="{tis_name}"').frac_phastcons)
+            logging.info(f'{tis_name}, p = {p:.3}')
+
+        logging.info(all_tis_merged.groupby(['tissue', 'anno']).frac_phastcons.median())
         ### end_fig
-
-        ### fig: H boxplot of all tissues by frac-tissue-spec enhancers, hue = exp type
-        fig = plt.figure(figsize=(10,6))
-        g = sns.boxplot(data=all_tis_merged,
-                        y='frac_phastcons', x='tissue', hue='anno', order=tis_order,
-                        palette={'Broad':'#fee5d9', 'Tissue-specific':'#de2d26'},
-                        showfliers=False)
-        g.set_xticklabels(tis_names, rotation=30, horizontalalignment='right')
-        g.set_ylabel('Fraction of conserved CRE bp')
-        g.set_xlabel('')
-        g.legend(handles=g.legend_.legendHandles, frameon=False, bbox_to_anchor=(1, 1.15))
-        sns.despine()
-        plt.tight_layout()
-        plt.savefig(f'{RES_PATH}/all_{landscape_def}_frac-phastconsXtisspec_bytissue_H_boxplot_hue.{fmt}', format=fmt, dpi=400)
-        plt.close()
-        ### end_fig
-
-
-    ### fig/table: MWU test of fraction of tissue-specific enhancers
-    for tis_name in tis_order:
-        ts, p = stats.mannwhitneyu(all_tis_merged.query('anno=="Tissue-specific"').query(f'tissue=="{tis_name}"').frac_tisspec_enh,
-                                   all_tis_merged.query('anno=="Broad"').query(f'tissue=="{tis_name}"').frac_tisspec_enh)
-        logging.info(f'{tis_name}, p = {p:.3}')
-
-    logging.info(all_tis_merged.groupby(['tissue', 'anno']).frac_tisspec_enh.median())
-    ### end_fig
-
-    ### fig/table: MWU test of number of enhancers
-    for tis_name in tis_order:
-        ts, p = stats.mannwhitneyu(all_tis_merged.query('anno=="Tissue-specific"').query(f'tissue=="{tis_name}"').enh_num,
-                                   all_tis_merged.query('anno=="Broad"').query(f'tissue=="{tis_name}"').enh_num)
-        logging.info(f'{tis_name}, p = {p:.3}')
-
-    logging.info(all_tis_merged.groupby(['tissue', 'anno']).enh_num.median())
-    ### end_fig
-
-    ### fig/table: MWU test of fraction of phastcons bp (in cre)
-    for tis_name in tis_order:
-        ts, p = stats.mannwhitneyu(all_tis_merged.query('anno=="Tissue-specific"').query(f'tissue=="{tis_name}"').frac_phastcons,
-                                   all_tis_merged.query('anno=="Broad"').query(f'tissue=="{tis_name}"').frac_phastcons)
-        logging.info(f'{tis_name}, p = {p:.3}')
-
-    logging.info(all_tis_merged.groupby(['tissue', 'anno']).frac_phastcons.median())
-    ### end_fig
