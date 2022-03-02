@@ -218,29 +218,11 @@ for landscape_def in ['loop', 'contact']:
         plt.close()
         ### end_fig
 
-        ### fig: boxplot of enh num by expression status for all tissues, w. stripplot
-        fig = plt.figure(figsize=(8,10))
-        g = sns.boxplot(data=enh_by_gene_anno, order=tis_order,
-                        x='enh_num', y='tissue', hue='exp',
-                        palette=['tab:gray', 'tab:blue'], showfliers=False)
-        g = sns.stripplot(data=enh_by_gene_anno, order=tis_order,
-                        x='enh_num', y='tissue', hue='exp', dodge=True, size=1,
-                        palette=['.3', '.3'])
-        g.set_yticklabels(tis_names)
-        g.set_xlabel('Number of CREs')
-        g.set_ylabel('')
-        g.legend(handles=g.legend_.legendHandles, bbox_to_anchor=(1.01, 1), frameon=False,
-                 labels=['Not expressed', 'Expressed'])
-        sns.despine()
-        plt.tight_layout()
-        plt.savefig(f'{RES_PATH}/all_{landscape_def}_expvenh-num_bytissue_boxplot_withpoints_hue.{fmt}', format=fmt, dpi=400)
-        plt.close()
-        ### end_fig
-
     ### fig/table: MWU test of number of enhancers exp vs. not
+    logging.info('# CRE by expressed v. not expressed genes')
     for tis_name in tis_order:
         ts, p = stats.mannwhitneyu(all_tis[all_tis['exp']==0].query(f'tissue=="{tis_name}"').enh_num,
-                                   all_tis[all_tis['exp']==1].query(f'tissue=="{tis_name}"').enh_num)
+                                   all_tis[all_tis['exp']==1].query(f'tissue=="{tis_name}"').enh_num, alternative='less')
         logging.info(f'{tis_name}, p = {p:.3}, corrected = {p < (0.05/10)}')
 
     logging.info('Not expressed')
@@ -293,7 +275,7 @@ for landscape_def in ['loop', 'contact']:
         plt.close()
         ### end_fig
 
-        ### fig: boxplot of all tissues by frac-tissue-spec enhancers, hue = exp type
+        ### fig: boxplot of all tissues by num-tissue-spec enhancers, hue = exp type
         fig = plt.figure(figsize=(8,10))
         g = sns.boxplot(data=enh_by_expgene_anno.query('anno=="tis_spec" | anno=="exp_broad"'),
                            x='num_tisspec_enh', y='tissue', hue='anno', order=tis_order,
@@ -317,13 +299,29 @@ for landscape_def in ['loop', 'contact']:
                            palette={'exp_broad':'#fee5d9', 'tis_spec':'#de2d26'},
                            showfliers=False, fliersize=1)
         g.set_yticklabels(tis_names)
-        g.set_xlabel('Fraction tissue-specific CREs')
+        g.set_xlabel('Number of tissue-specific CREs')
         g.set_ylabel('')
         g.legend(handles=g.legend_.legendHandles, bbox_to_anchor=(1.01, 1), frameon=False,
                  labels=['Broad', 'Tissue-specific'], title='Expression')
         sns.despine()
         plt.tight_layout()
         plt.savefig(f'{RES_PATH}/all_{landscape_def}_numenhXtisspec_bytissue_exponly_boxplot_nofliers_hue.{fmt}', format=fmt, dpi=400)
+        plt.close()
+        ### end_fig
+
+        ### fig: H_boxplot of enh num by tis-spec status for all tissues
+        fig = plt.figure(figsize=(10,6))
+        g = sns.boxplot(data=enh_by_gene_anno.query('anno=="tis_spec" | anno=="exp_broad"'),
+                        y='enh_num', x='tissue', hue='anno', order=tis_order,
+                        palette={'exp_broad':'#fee5d9', 'tis_spec':'#de2d26'}, showfliers=False)
+        g.set_xticklabels(tis_names, rotation=30, horizontalalignment='right')
+        g.set_ylabel('Number of CREs')
+        g.set_xlabel('')
+        g.legend(handles=g.legend_.legendHandles, bbox_to_anchor=(1.01, 1), frameon=False,
+                 labels=['Broad', 'Tissue-specific'])
+        sns.despine()
+        plt.tight_layout()
+        plt.savefig(f'{RES_PATH}/all_{landscape_def}_enh-numXtisspec_bytissue_H_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
         plt.close()
         ### end_fig
 
@@ -361,6 +359,23 @@ for landscape_def in ['loop', 'contact']:
         plt.close()
         ### end_fig
 
+        ### fig: H boxplot of all tissues by number of enhancers, hue = exp type, nofliers
+        fig = plt.figure(figsize=(10,6))
+        g = sns.boxplot(data=enh_by_expgene_anno.query('anno=="tis_spec" | anno=="exp_broad"'),
+                        y='enh_num', x='tissue', hue='anno', order=tis_order,
+                        palette={'exp_broad':'#fee5d9', 'tis_spec':'#de2d26'},
+                        showfliers=False)
+        g.set_xticklabels(tis_names, rotation=30, horizontalalignment='right')
+        g.set_ylabel('Number of CREs')
+        g.set_xlabel('')
+        g.legend(handles=g.legend_.legendHandles, frameon=False, bbox_to_anchor=(1, 1.25),
+                 labels=['Broad', 'Tissue-specific'], title='Expression')
+        sns.despine()
+        plt.tight_layout()
+        plt.savefig(f'{RES_PATH}/all_{landscape_def}_num-enhXtisspec_bytissue_H_boxplot_hue.{fmt}', format=fmt, dpi=400)
+        plt.close()
+        ### end_fig
+
         ### fig: H split violinplot of enh num by expression status for all tissues
         fig = plt.figure(figsize=(10,6))
         g = sns.violinplot(data=enh_by_expgene_anno.query('anno=="tis_spec" | anno=="exp_broad"'),
@@ -377,16 +392,30 @@ for landscape_def in ['loop', 'contact']:
         plt.close()
         ### end_fig
 
-        ### fig/table: MWU test of number of enhancers exp vs. not
+        ### fig/table: MWU test of fraction of tissue specific enhancers btw tisspec and broad genes
+        logging.info('% tissue-specific CRE by tissue-specificity of expression')
         for tis_name in tis_order:
             ts, p = stats.mannwhitneyu(enh_by_expgene_anno.query('anno=="tis_spec"').query(f'tissue=="{tis_name}"').frac_tisspec_enh,
-                                       enh_by_expgene_anno.query('anno=="exp_broad"').query(f'tissue=="{tis_name}"').frac_tisspec_enh)
+                                       enh_by_expgene_anno.query('anno=="exp_broad"').query(f'tissue=="{tis_name}"').frac_tisspec_enh, alternative='greater')
             logging.info(f'{tis_name}, p = {p:.3}, corrected = {p < (0.05/10)}')
 
         logging.info('Tissue-specific')
         logging.info(enh_by_expgene_anno.query('anno=="tis_spec"').groupby('tissue').frac_tisspec_enh.median())
         logging.info('Broad')
         logging.info(enh_by_expgene_anno.query('anno=="exp_broad"').groupby('tissue').frac_tisspec_enh.median())
+        ### end_fig
+
+        ### fig/table: MWU test of fraction of tissue specific enhancers btw tisspec and broad genes
+        logging.info('# CRE by tissue-specificity of expression')
+        for tis_name in tis_order:
+            ts, p = stats.mannwhitneyu(enh_by_expgene_anno.query('anno=="tis_spec"').query(f'tissue=="{tis_name}"').enh_num,
+                                       enh_by_expgene_anno.query('anno=="exp_broad"').query(f'tissue=="{tis_name}"').enh_num, alternative='greater')
+            logging.info(f'{tis_name}, p = {p:.3}, corrected = {p < (0.05/10)}')
+
+        logging.info('Tissue-specific')
+        logging.info(enh_by_expgene_anno.query('anno=="tis_spec"').groupby('tissue').enh_num.median())
+        logging.info('Broad')
+        logging.info(enh_by_expgene_anno.query('anno=="exp_broad"').groupby('tissue').enh_num.median())
         ### end_fig
 
         ### fig: boxplot of conserved enhancer bp by annotation, exp only, fliers
@@ -438,7 +467,7 @@ for landscape_def in ['loop', 'contact']:
         ### end_fig
 
         ### fig: boxplot of enh num by log2 expression for all tissues
-        nonzero = all_tis_exp.assign(exp_bins=lambda x: pd.qcut(x['log2_exp'], q=4, labels=[1,2,3,4]))
+        nonzero = all_tis_exp.query('enh_num>0').assign(exp_bins=lambda x: pd.qcut(x['log2_exp'], q=4, labels=[1,2,3,4]))
         logging.info(f'Exp bin edges: {pd.qcut(nonzero.log2_exp, q=4, retbins=True)[1]}')
 
         fig = plt.figure(figsize=(8,10))
@@ -453,15 +482,15 @@ for landscape_def in ['loop', 'contact']:
         ### end_fig
 
     ### fig/table: log exp v. # CRE stats to file
-    logging.info('Correlation between log2 expression and CRE decile, test 1st v. 10th')
+    logging.info('Correlation between log2 expression and CRE decile, test 1st v. 4th')
     for tis_name in tis_order:
         rho, corrp = stats.spearmanr(nonzero.query(f'tissue=="{tis_name}"').enh_num, nonzero.query(f'tissue=="{tis_name}"').log2_exp)
         ts, p = stats.mannwhitneyu(nonzero.query(f'tissue=="{tis_name}" & exp_bins == 1').enh_num,
                                    nonzero.query(f'tissue=="{tis_name}" & exp_bins == 4').enh_num)
-        logging.info(f'{tis_name}, 1stv10th p = {p:.3}, spearmanR = {rho:.3}, p = {corrp:.3}')
+        logging.info(f'{tis_name}, 1stv4th p = {p:.3}, spearmanR = {rho:.3}, p = {corrp:.3}')
 
-    logging.info('Median # CRE per CRE decile')
-    logging.info(nonzero.groupby(['tissue', 'cre_bins']).enh_num.median().to_string())
+    logging.info('Median # CRE per CRE quartile')
+    logging.info(nonzero.groupby(['tissue', 'exp_bins']).enh_num.median().to_string())
     ### end_fig
 
     ### fig/table: log stats to file, kw # CRE
