@@ -12,7 +12,7 @@ suppressMessages(library(dplyr))
 
 # constants and paths
 INDATE  <- '2022-02-18'
-RESDATE <- '2022-01-18'
+RESDATE <- '2022-02-18'
 
 DORS <- '/dors/capra_lab/users/bentonml/cre_landscape'
 DATA <- paste(DORS, '/res/tisspec_features/dat/', INDATE, sep='')
@@ -42,8 +42,8 @@ for (landscape in landscapes) {
       # housekeeping v. expressed genes
       infile <- paste(DATA, '/', tis, '_', landscape, '.tsv', sep='')
       ts <- read.csv(infile, sep='\t')
-      ts$anno <- factor(ts$anno, levels=c("exp_broad", "tis_spec"), labels=c('Broad', 'Tissue-specific'))
-      matched <- matchit(anno ~ gtex_exp_log2, data=ts, estimand="ATT", replace=FALSE, ratio=2, caliper=0.1)
+      ts$anno <- factor(ts$anno, levels=c("exp_broad", "tis_spec"), labels=c('Broad','Tissue-specific'))
+      matched <- matchit(anno ~ gtex_exp_log2, data=ts, estimand="ATT", replace=FALSE, ratio=10, caliper=0.1)
 
       return_match_statistics(matched, tis=tis, ltype=landscape, dtype='')
       mdata <- match.data(matched, data=ts, distance="prop.score")
@@ -52,8 +52,8 @@ for (landscape in landscapes) {
       # housekeeping v. expressed genes, CRE > 0
       infile <- paste(DATA, '/gt0_', tis, '_', landscape, '.tsv', sep='')
       ts <- read.csv(infile, sep='\t')
-      ts$anno <- factor(hk$anno, levels=c("exp_broad", "tis_spec"), labels=c('Broad', 'Tissue-specific'))
-      matched <- matchit(anno ~ gtex_exp_log2, data=ts, estimand="ATT", replace=FALSE, ratio=2, caliper=0.1)
+      ts$anno <- factor(ts$anno, levels=c("exp_broad", "tis_spec"), labels=c('Broad','Tissue-specific'))
+      matched <- matchit(anno ~ gtex_exp_log2, data=ts, estimand="ATT", replace=FALSE, ratio=10, caliper=0.1)
 
       return_match_statistics(matched, tis=tis, dtype='gt0_', ltype=landscape)
       mdata <- match.data(matched, data=ts, distance="prop.score")
