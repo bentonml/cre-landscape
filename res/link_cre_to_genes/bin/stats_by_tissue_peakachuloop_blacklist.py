@@ -6,7 +6,7 @@
 #   assumes pwd is located here with hydrogen:
 #       /dors/capra_lab/users/bentonml/cross_species_gain_loss/bin/slurm/
 #
-#  tis_spec threshold = 0.6
+#  tis_spec threshold = 0.6 (enh)
 ###
 
 import os
@@ -110,7 +110,6 @@ def create_enh_num_by_gene_df(enh_to_gene_df, gene_anno_df):
     # because all windows with tss count themselves, counteract blanket nan to zero
     res = res.assign(tss=lambda x: np.where(x.tss == 0, 1, x.tss),
                      tss_bins=lambda x: pd.cut(x['tss'], bins=[0,1,2,3,4,8], labels=['1', '2', '3', '4','5+']),
-                     tis_spec=lambda x: np.where(x.rel_entropy > tisspec_thresh, 1, 0),
                      frac_tisspec_enh=lambda x: np.where(x.enh_num > 0, x.tisspec_enh/x.enh_num, np.NaN))
     return res
 ### \\

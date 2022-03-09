@@ -3,7 +3,7 @@
 #   conda env | enh_gain-loss
 #   created   | 2019.12.10
 #
-#  tis_spec threshold = 0.6
+#  tis_spec threshold = 0.6 (CRE)
 ###
 
 import os
@@ -29,7 +29,7 @@ FIG_PATH = f'{RES_PATH}/fig/{str(date.today())}'
 if not os.path.isdir(FIG_PATH):
     os.makedirs(FIG_PATH)
 
-tisspec_thresh = 0.6  # for tissue-specificity metric
+tisspec_thresh = 0.6  # for tissue-specificity metric (CRE)
 thresh='Q05'          # for hic q-values
 t = 0.05              # for hic q-values
 
@@ -276,7 +276,6 @@ def create_enh_num_by_gene_df(enh_to_gene_df, gene_anno_df):
     # because all windows with tss count themselves, counteract blanket nan to zero
     res = res.assign(tss=lambda x: np.where(x.tss == 0, 1, x.tss),
                      tss_bins=lambda x: pd.cut(x['tss'], bins=[0,1,2,3,4,8], labels=['1', '2', '3', '4','5+']),
-                     tis_spec=lambda x: np.where(x.rel_entropy > tisspec_thresh, 1, 0),
                      frac_tisspec_enh=lambda x: np.where(x.enh_num > 0, x.tisspec_enh/x.enh_num, np.NaN),
                      frac_phastcons=lambda x: np.where(x.enh_num > 0, x.phastcons_overlap/x.enh_length, np.NaN))
     return res
