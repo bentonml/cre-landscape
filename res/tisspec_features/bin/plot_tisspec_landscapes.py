@@ -18,8 +18,8 @@ from scipy import stats
 
 plt.switch_backend('agg')  # add to save plots non-interactively
 
-EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-01-07'
-MAT_DAT_PATH = f'../dat/2022-02-18'
+EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-03-08'
+MAT_DAT_PATH = f'../dat/2022-03-08'
 RES_PATH = f'../fig/{str(date.today())}'
 
 # create a date stamped dir for files
@@ -29,6 +29,7 @@ if not os.path.isdir(RES_PATH):
 # set up log file to record data about run
 logging.basicConfig(filename=f'{RES_PATH}/README', level=logging.INFO)
 
+tisspec_thresh = 0.3
 tis_order = ['spleen','liver', 'heart_left_ventricle', 'brain_hippocampus', 'lung', 'pancreas',
              'brain_prefrontal_cortex', 'psoas_muscle', 'small_intestine', 'ovary']
 tis_names = ['Spleen','Liver', 'Heart', 'Hippocampus', 'Lung', 'Pancreas',
@@ -54,6 +55,7 @@ def read_data(landscape_def):
         enh_num_by_gene = enh_num_by_gene.assign(rel_entropy_bins=lambda x: pd.cut(x['rel_entropy'], bins=10))
         enh_num_by_gene = enh_num_by_gene.assign(enh_rel_entropy_bins=lambda x: pd.cut(x['enh_rel_entropy'], bins=5))
         enh_num_by_gene = enh_num_by_gene.assign(exp_nocat=lambda x: np.where((x.exp == 1) & (x.hk == 0) & (x.lof_intol == 0) & (x.essential == 0), 1, 0))
+        enh_num_by_gene = enh_num_by_gene.assign(tis_spec=lambda x: np.where(x.rel_entropy > tisspec_thresh, 1, 0))
         enh_num_by_gene = enh_num_by_gene.assign(exp_broad=lambda x: np.where((x.exp == 1) & (x.tis_spec == 0), 1, 0))
         enh_num_by_gene = enh_num_by_gene.assign(log2_exp=lambda x: np.log2(x[tis] + 1))
         enh_num_by_gene = enh_num_by_gene.rename(columns={tis:'gtex_exp'})
