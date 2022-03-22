@@ -397,17 +397,35 @@ for landscape_def in ['loop', 'contact']:
     ### // write p value table, CRE > 0 \\ ###
     hrows = []
     lrows = []
+
+    print('')
+    print(f'tisue\tmed_cre_num_expressed\tmed_cre_num_housekeeping\tmed_frac_phastcons_expressed\tmed_frac_phastcons_housekeeping')
     for tis in tis_order:
         df = read_matched_data(tis=tis, gene_type='hk_gt0', landscape_type=landscape_def)
         merged = df.merge(all_tis_exp.query(f'tissue=="{tis}"'), how='left')
+
+        # print medians
+        cre_med = merged.groupby('anno').enh_num.median()
+        phast_med = merged.groupby('anno').frac_phastcons.median()
+        print(f'{tis}\t{cre_med["Expressed"]}\t{cre_med["Housekeeping"]}\t{phast_med["Expressed"]}\t{phast_med["Housekeeping"]}')
+
         # print MWU stats
         _, cre_p = stats.mannwhitneyu(merged.query(f'anno=="Housekeeping"').enh_num, merged.query(f'anno=="Expressed"').enh_num)
         _, phast_p = stats.mannwhitneyu(merged.query(f'anno=="Housekeeping"').frac_phastcons, merged.query(f'anno=="Expressed"').frac_phastcons)
         _, frac_p = stats.mannwhitneyu(merged.query(f'anno=="Housekeeping"').frac_tisspec_enh, merged.query(f'anno=="Expressed"').frac_tisspec_enh)
         hrows.append([tis, 'housekeeping', cre_p, phast_p, frac_p])
 
+    print('')
+    print(f'tisue\tmed_cre_num_expressed\tmed_cre_num_lof\tmed_frac_phastcons_expressed\tmed_frac_phastcons_lif')
+    for tis in tis_order:
         df = read_matched_data(tis=tis, gene_type='lof_gt0', landscape_type=landscape_def)
         merged = df.merge(all_tis_exp.query(f'tissue=="{tis}"'), how='left')
+
+        # print medians
+        cre_med = merged.groupby('anno').enh_num.median()
+        phast_med = merged.groupby('anno').frac_phastcons.median()
+        print(f'{tis}\t{cre_med["Expressed"]}\t{cre_med["LoF Intolerant"]}\t{phast_med["Expressed"]}\t{phast_med["LoF Intolerant"]}')
+
         # print MWU stats
         _, cre_p = stats.mannwhitneyu(merged.query(f'anno=="LoF Intolerant"').enh_num, merged.query(f'anno=="Expressed"').enh_num)
         _, phast_p = stats.mannwhitneyu(merged.query(f'anno=="LoF Intolerant"').frac_phastcons, merged.query(f'anno=="Expressed"').frac_phastcons)
