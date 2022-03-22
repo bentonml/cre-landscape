@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 
 from datetime import date
 from scipy import stats
+import statsmodels.api as sm
 
 plt.switch_backend('agg')  # add to save plots non-interactively
 
@@ -189,3 +190,24 @@ for cretype in ['', 'gt0_']:
 
         logging.info(all_tis_merged.groupby(['tissue', 'anno']).frac_phastcons.median())
         ### end_fig
+
+        ### // write p value table with FDR, CRE > 0 \\ ###
+        trows = []
+        for tis in tis_order:
+            # print MWU stats
+            _, frac_p = stats.mannwhitneyu(all_tis_merged.query('anno=="Tissue-specific"').query(f'tissue=="{tis}"').frac_tisspec_enh,
+                                           all_tis_merged.query('anno=="Broad"').query(f'tissue=="{tis}"').frac_tisspec_enh)
+            _, phst_p = stats.mannwhitneyu(all_tis_merged.query('anno=="Tissue-specific"').query(f'tissue=="{tis}"').frac_phastcons,
+                                            all_tis_merged.query('anno=="Broad"').query(f'tissue=="{tis}"').frac_phastcons)
+            if cretype == 'gt0_':
+                crelabel = 'gt0'
+                trows.append([tis, crelabel, frac_p, phst_p])
+            else:
+                crelabel = 'full'
+                trows.append([tis, crelabel, frac_p, phst_p])
+
+        hdf = pd.DataFrame(trows, columns=['tissue', 'cretype', 'frac_tisspec_p', 'phastcons_p'])
+        hdf = hdf.assign(phastcons_fdr=lambda x: sm.stats.multipletests(x.phastcons_p, alpha=0.05, method='fdr_bh')[1],
+                         frac_tisspec_fdr=lambda x: sm.stats.multipletests(x.frac_tisspec_p, alpha=0.05, method='fdr_bh')[1])
+        hdf.to_csv(f'../res/{landscape_def}_{crelabel}_df.out', sep='\t', index=False, header=True)
+
