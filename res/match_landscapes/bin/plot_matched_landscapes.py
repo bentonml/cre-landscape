@@ -75,7 +75,6 @@ for landscape_def in ['loop', 'contact']:
     all_tis = read_data(landscape_def)
     all_tis_exp = all_tis[all_tis['exp']==1]
 
-
     ### // full hk and lof sets \\ ###
     for tis in tis_order:
         df = read_matched_data(tis=tis, landscape_type=landscape_def, gene_type='hk')
@@ -263,6 +262,25 @@ for landscape_def in ['loop', 'contact']:
             plt.close()
             ### end_fig
 
+            ### fig: plot boxplot of hk v. expressed by cre_num, matched, notch, nofliers
+            g = sns.catplot(x='anno', y='enh_num', data=merged, kind='box',
+                            notch=True, order=['Housekeeping', 'Expressed'],
+                            hue='anno', hue_order=['Housekeeping', 'Expressed'],
+                            palette=['tab:green', 'tab:blue'], dodge=False,
+                            showfliers=False, width=.6, height=4, aspect=.7)
+            ts, p = stats.mannwhitneyu(merged.query(f'anno=="Housekeeping"').enh_num, merged.query(f'anno=="Expressed"').enh_num)
+            if p < 0.01:
+              plt.text(0.5, g.ax.get_ylim()[1]+1, f'p = {p:.1e}', horizontalalignment='center')
+            else:
+              plt.text(0.5, g.ax.get_ylim()[1]+1, f'p = {p:.2f}', horizontalalignment='center')
+            g.set_xlabels('')
+            g.set_xticklabels(['HK', 'Expressed'])
+            g.set_ylabels('Number of CREs')
+            plt.tight_layout()
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXenh-num_hk_gt0_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
+            plt.close()
+            ### end_fig
+
             ### fig: ecdf of hk v. expressed by cre_num, matched
             g = sns.displot(hue='anno', y='enh_num', data=merged, kind='ecdf',
                             palette=['tab:green', 'tab:blue'], hue_order=['Housekeeping', 'Expressed'],
@@ -277,7 +295,27 @@ for landscape_def in ['loop', 'contact']:
 
             ### fig: plot boxplot of hk v. expressed by % phastcons, matched, fliers
             g = sns.catplot(x='anno', y='frac_phastcons', data=merged, kind='box',
-                            palette=['tab:green', 'tab:blue'], order=['Housekeeping', 'Expressed'], showfliers=True)
+                            notch=True, order=['Housekeeping', 'Expressed'],
+                            hue='anno', hue_order=['Housekeeping', 'Expressed'],
+                            palette=['tab:green', 'tab:blue'], dodge=False,
+                            showfliers=False, width=.6, height=4, aspect=.7)
+            ts, p = stats.mannwhitneyu(merged.query(f'anno=="Housekeeping"').frac_phastcons, merged.query(f'anno=="Expressed"').frac_phastcons)
+            if p < 0.01:
+                plt.text(0.5, g.ax.get_ylim()[1], f'p = {p:.1e}', horizontalalignment='center')
+            else:
+                plt.text(0.5, g.ax.get_ylim()[1], f'p = {p:.2f}', horizontalalignment='center')
+            g.set_xlabels('')
+            g.set_xticklabels(['HK', 'Expressed'])
+            g.set_ylabels('% PhastCons')
+            plt.tight_layout()
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXphastcons_hk_gt0_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
+            plt.close()
+            ### end_fig
+
+            ### fig: plot boxplot of hk v. expressed by % phastcons, matched, notch, nofliers
+            g = sns.catplot(x='anno', y='frac_phastcons', data=merged, kind='box', notch=True,
+                            palette=['tab:green', 'tab:blue'], order=['Housekeeping', 'Expressed'],
+                            showfliers=False, width=.65, height=4.5, aspect=.8)
             ts, p = stats.mannwhitneyu(merged.query(f'anno=="Housekeeping"').frac_phastcons, merged.query(f'anno=="Expressed"').frac_phastcons)
             if p < 0.01:
                 plt.text(0.5, g.ax.get_ylim()[1], f'p = {p:.1e}', horizontalalignment='center')
@@ -286,7 +324,7 @@ for landscape_def in ['loop', 'contact']:
             g.set_xlabels('')
             g.set_ylabels('% PhastCons')
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXphastcons_hk_gt0_matched_boxplot_fliers.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXphastcons_hk_gt0_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -324,7 +362,27 @@ for landscape_def in ['loop', 'contact']:
         with sns.plotting_context("paper", rc=rc):
             ### fig: plot boxplot of lof v. expressed by cre_num, matched, fliers
             g = sns.catplot(x='anno', y='enh_num', data=merged, kind='box',
-                            palette=['tab:orange', 'tab:blue'], order=['LoF Intolerant', 'Expressed'], showfliers=True)
+                            notch=True, order=['LoF Intolerant', 'Expressed'],
+                            hue='anno', hue_order=['LoF Intolerant', 'Expressed'],
+                            palette=['tab:orange', 'tab:blue'], dodge=False,
+                            showfliers=False, width=.6, height=4, aspect=.7)
+            ts, p = stats.mannwhitneyu(merged.query(f'anno=="LoF Intolerant"').enh_num, merged.query(f'anno=="Expressed"').enh_num)
+            if p < 0.01:
+                plt.text(0.5, g.ax.get_ylim()[1]+1, f'p = {p:.1e}', horizontalalignment='center')
+            else:
+                plt.text(0.5, g.ax.get_ylim()[1]+1, f'p = {p:.2f}', horizontalalignment='center')
+            g.set_xlabels('')
+            g.set_xticklabels(['LoF', 'Expressed'])
+            g.set_ylabels('Number of CREs')
+            plt.tight_layout()
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXenh-num_lof_gt0_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
+            plt.close()
+            ### end_fig
+
+            ### fig: plot boxplot of hk v. expressed by cre_num, matched, notch, nofliers
+            g = sns.catplot(x='anno', y='enh_num', data=merged, kind='box', notch=True,
+                        hue='anno', hue_order=['LoF Intolerant', 'Expressed'], palette=['tab:orange', 'tab:blue'],
+                        dodge=False, showfliers=False, width=.65, height=4.5, aspect=.8)
             ts, p = stats.mannwhitneyu(merged.query(f'anno=="LoF Intolerant"').enh_num, merged.query(f'anno=="Expressed"').enh_num)
             if p < 0.01:
                 plt.text(0.5, g.ax.get_ylim()[1]+1, f'p = {p:.1e}', horizontalalignment='center')
@@ -333,7 +391,7 @@ for landscape_def in ['loop', 'contact']:
             g.set_xlabels('')
             g.set_ylabels('Number of CREs')
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXenh-num_lof_gt0_matched_boxplot_fliers.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXenh-num_lof_gt0_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -361,6 +419,25 @@ for landscape_def in ['loop', 'contact']:
             g.set_ylabels('% PhastCons')
             plt.tight_layout()
             plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXphastcons_lof_gt0_matched_boxplot_fliers.{fmt}', format=fmt, dpi=400)
+            plt.close()
+            ### end_fig
+
+            ### fig: plot boxplot of lof v. expressed by % phastcons, matched, notch, nofliers
+            g = sns.catplot(x='anno', y='frac_phastcons', data=merged, kind='box',
+                            notch=True, order=['LoF Intolerant', 'Expressed'],
+                            hue='anno', hue_order=['LoF Intolerant', 'Expressed'],
+                            palette=['tab:orange', 'tab:blue'], dodge=False,
+                            showfliers=False, width=.6, height=4, aspect=.7)
+            ts, p = stats.mannwhitneyu(merged.query(f'anno=="LoF Intolerant"').frac_phastcons, merged.query(f'anno=="Expressed"').frac_phastcons)
+            if p < 0.01:
+                plt.text(0.5, g.ax.get_ylim()[1], f'p = {p:.1e}', horizontalalignment='center')
+            else:
+                plt.text(0.5, g.ax.get_ylim()[1], f'p = {p:.2f}', horizontalalignment='center')
+            g.set_xlabels('')
+            g.set_xticklabels(['LoF', 'Expressed'])
+            g.set_ylabels('% PhastCons')
+            plt.tight_layout()
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXphastcons_lof_gt0_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -425,4 +502,4 @@ for landscape_def in ['loop', 'contact']:
                      phastcons_fdr=lambda x: sm.stats.multipletests(x.phastcons_p, alpha=0.05, method='fdr_bh')[1],
                      frac_tisspec_fdr=lambda x: sm.stats.multipletests(x.frac_tisspec_p, alpha=0.05, method='fdr_bh')[1])
     ldf.to_csv(f'../res/lof-intol_{landscape_def}_gt0_df.out', sep='\t', index=False, header=True)
-
+    ### \\
