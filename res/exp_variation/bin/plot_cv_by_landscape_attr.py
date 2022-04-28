@@ -13,7 +13,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 from datetime import date
-from scipy import stats
+from scipy.stats import spearmanr
+
 
 plt.switch_backend('agg')  # add to save plots non-interactively
 
@@ -39,6 +40,9 @@ tis_dict  = {'ovary':'Ovary', 'psoas_muscle':'Muscle', 'heart_left_ventricle':'H
 fmt='pdf'
 rc = {'font.size':14, 'axes.titlesize':16,'axes.labelsize':14, 'legend.fontsize': 14,
       'xtick.labelsize': 14, 'ytick.labelsize': 14}
+
+def spearman_pval(x,y):
+    return spearmanr(x,y)[1]
 
 def read_data(landscape_def):
     df_lst = []
@@ -117,8 +121,12 @@ for landscape_def in ['loop', 'contact']:
             plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_expVar_heatmap_gt0.{fmt}', format=fmt, dpi=400)
             plt.close()
 
-            print(f'{tis}, CRE > 0')
+            print(f'{tis}, CRE > 0, spearman')
             with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 150):
                 print(corr)
 
+            print(f'{tis}, CRE > 0, p-values')
+            with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 150):
+                corr_p = gt0.filter(['Expression variation', 'Tissue-specificity (gene)', '# CREs', '% tissue-specific CREs', '% PhastCons']).corr(method=spearman_pval)
+                print(corr_p)
 
