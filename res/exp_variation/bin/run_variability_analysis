@@ -13,5 +13,5 @@ python calculate_gtex_cv_bytis.py
 Rscript calc_cv_resids.R
 
 # summarize and visualize variability results
-python plot_cv_by_landscape_attr.py
+python plot_cv_by_landscape_attr.py > ../res/README_`date +%F`
 

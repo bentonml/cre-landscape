@@ -58,10 +58,6 @@ def read_data(landscape_def):
         df_lst.append(enh_num_by_gene)
 
     all_tis = pd.concat(df_lst)
-    tisspec_bins = ['(0,0.1]', '(0.1,0.2]', '(0.2,0.3]', '(0.3,0.4]', '(0.4,0.5]',
-                    '(0.5,0.6]', '(0.6,0.7]', '(0.7,0.8]', '(0.8,0.9]', '(0.9,1.0]']
-    all_tis['frac_tisspec_enh_bins'] = pd.cut(all_tis.frac_tisspec_enh, bins=10,
-                                              labels=tisspec_bins)
     return all_tis
 
 def read_cv_data(tis, thresh='0.8'):
@@ -120,4 +116,9 @@ for landscape_def in ['loop', 'contact']:
             plt.tight_layout()
             plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_expVar_heatmap_gt0.{fmt}', format=fmt, dpi=400)
             plt.close()
+
+            print(f'{tis}, CRE > 0')
+            with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 150):
+                print(corr)
+
 
