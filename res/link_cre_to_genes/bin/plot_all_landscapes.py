@@ -305,20 +305,22 @@ for landscape_def in ['loop', 'contact']:
         plt.close()
         ### end_fig
 
-        ### fig: boxplot of enh num by log2 expression for all tissues
-        nonzero = all_tis_exp.query('enh_num>0').assign(exp_bins=lambda x: pd.qcut(x['log2_exp'], q=4, labels=[1,2,3,4]))
-        logging.info(f'Exp bin edges: {pd.qcut(nonzero.log2_exp, q=4, retbins=True)[1]}')
 
-        fig = plt.figure(figsize=(8,10))
-        g = sns.catplot(data=nonzero, kind='box', showfliers=False,
-                        x='exp_bins', y='enh_num', order=[1,2,3,4],
-                        col='tissue', palette='Greys', sharey=False, col_wrap=5)
-        facet_titles(g.axes)
-        facet_x_axis(g.axes, 'Expression Quartile')
-        g.set_ylabels('# CREs')
-        plt.savefig(f'{RES_PATH}/all_{landscape_def}_enh-numXlog2exp_bytissue_boxplot.{fmt}', format=fmt, dpi=400)
-        plt.close()
-        ### end_fig
+    ### fig: boxplot of enh num by log2 expression for each tissue
+    for idx, tis in enumerate(tis_order):
+        with sns.plotting_context("paper", rc=rc):
+            nonzero = all_tis_exp.query(f'enh_num>0 & tissue=="{tis}"').assign(exp_bins=lambda x: pd.qcut(x['log2_exp'], q=4, labels=[1,2,3,4]))
+            g = sns.catplot(x='exp_bins', y='enh_num', data=nonzero,
+                            kind='box', notch=True, order=[1,2,3,4],
+                            palette='Greys', dodge=False,
+                            showfliers=False, width=.6, height=6, aspect=.7)
+            g.set_xlabels('Expression Quartile')
+            g.set_ylabels('Number of CREs')
+            g.fig.suptitle(f'{tis_names[idx]}', x=0.6, y=0.92)
+            plt.tight_layout()
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_enh-numXlog2exp_bytissue_boxplot.{fmt}', format=fmt, dpi=400)
+            plt.close()
+    ### end_fig
 
     ### fig/table: log exp v. # CRE stats to file
     logging.info('Correlation between log2 expression and CRE decile, test 1st v. 4th')
