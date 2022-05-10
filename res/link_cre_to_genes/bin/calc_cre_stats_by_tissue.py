@@ -250,11 +250,10 @@ def create_df_anno(loop_df, ec, gc):
 def create_enh_num_by_gene_df(enh_to_gene_df, gene_anno_df):
     ''' Creates a dataframe of single Hi-C windows with all gene and enhancer
     annotations. Calculates the fraction of tissue specific enhancers in a landscape,
-    specified as enhancers with entropy > 0.6. Genes are counted as tissue specific
-    if they have entropy > 0.6 as well.
+    specified as enhancers with entropy > 0.6.
     '''
     res = (enh_to_gene_df.groupby('target_gene', as_index=False)
-                         .agg({'enh_chrom':'count', 'tss':'mean', 'enh_rel_entropy':'mean', 'tisspec_enh':'sum', 'enh_length':'sum', 'phastcons_overlap':'sum'}))
+                         .agg({'enh_chrom':'count', 'enh_rel_entropy':'mean', 'tisspec_enh':'sum', 'enh_length':'sum', 'phastcons_overlap':'sum'}))
 
     # add in genes that don't have any assigned enhancers
     res = (gene_anno_df.merge(res, how='left', left_on='name', right_on='target_gene', validate='1:1')
@@ -264,12 +263,9 @@ def create_enh_num_by_gene_df(enh_to_gene_df, gene_anno_df):
     # fill with 0 for genes with no enhancers or other tss in window
     res['enh_num'] = res.enh_num.fillna(0)
     res['tisspec_enh'] = res.tisspec_enh.fillna(0)
-    res['tss'] = res.tss.fillna(0)
 
     # because all windows with tss count themselves, counteract blanket nan to zero
-    res = res.assign(tss=lambda x: np.where(x.tss == 0, 1, x.tss),
-                     tss_bins=lambda x: pd.cut(x['tss'], bins=[0,1,2,3,4,8], labels=['1', '2', '3', '4','5+']),
-                     frac_tisspec_enh=lambda x: np.where(x.enh_num > 0, x.tisspec_enh/x.enh_num, np.NaN),
+    res = res.assign(frac_tisspec_enh=lambda x: np.where(x.enh_num > 0, x.tisspec_enh/x.enh_num, np.NaN),
                      frac_phastcons=lambda x: np.where(x.enh_num > 0, x.phastcons_overlap/x.enh_length, np.NaN))
     return res
 ### \\
@@ -424,10 +420,10 @@ for tis in ['ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen', '
     ### end_fig
 
     ### assign enhancers to targets
-    enh_to_gene = (pd.concat([hic_pairs_anno.query('re_count > 0 & cg_count > 0').merge(col_gene).merge(row_enh).rename(columns={'cg_count':'tss'}).drop(columns=['rg_count']),
-                              hic_pairs_anno.query('ce_count > 0 & rg_count > 0').merge(row_gene).merge(col_enh).rename(columns={'rg_count':'tss'}).drop(columns=['cg_count'])], sort=False)
+    enh_to_gene = (pd.concat([hic_pairs_anno.query('re_count > 0 & cg_count > 0').merge(col_gene).merge(row_enh).drop(columns=['rg_count', 'cg_count']),
+                              hic_pairs_anno.query('ce_count > 0 & rg_count > 0').merge(row_gene).merge(col_enh).drop(columns=['cg_count', 'rg_count'])], sort=False)
                      .drop(columns=['rtad', 'ctad', 'in_same_win', 'under_1mb'])
-                     .filter(['enh_chrom', 'enh_start', 'enh_end', 'sig_connect', 'in_same_tad', 'target_gene', tis, 'hk', 'core', 'lof_intol', 'essential', 'rel_entropy', 'enh_rel_entropy', 'phastcons_overlap', 'tss'])
+                     .filter(['enh_chrom', 'enh_start', 'enh_end', 'sig_connect', 'in_same_tad', 'target_gene', tis, 'hk', 'core', 'lof_intol', 'essential', 'rel_entropy', 'enh_rel_entropy', 'phastcons_overlap'])
                      .assign(tisspec_enh=lambda x: np.where(x.enh_rel_entropy > tisspec_thresh, 1, 0),
                              enh_length=lambda x: x.enh_end - x.enh_start)
                      .drop_duplicates()
@@ -519,8 +515,8 @@ for tis in ['ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen', '
     hic_anno = create_df_anno(loops.to_dataframe(names=['chrom', 'start', 'end']), enh_count, gene_count)
 
     ### assign enhancers to targets
-    enh_to_gene = (hic_anno.query('e_count > 0 & g_count > 0').merge(loop_gene).merge(loop_enh).rename(columns={'e_count':'enh_num', 'g_count':'tss'}).drop(columns='e_entropy')
-                         .filter(['enh_chrom', 'enh_start', 'enh_end', 'target_gene', tis, 'hk', 'core', 'lof_intol', 'essential', 'rel_entropy', 'enh_rel_entropy', 'enh_length', 'phastcons_overlap', 'tss'])
+    enh_to_gene = (hic_anno.query('e_count > 0 & g_count > 0').merge(loop_gene).merge(loop_enh).rename(columns={'e_count':'enh_num'}).drop(columns=['e_entropy', 'g_count'])
+                         .filter(['enh_chrom', 'enh_start', 'enh_end', 'target_gene', tis, 'hk', 'core', 'lof_intol', 'essential', 'rel_entropy', 'enh_rel_entropy', 'enh_length', 'phastcons_overlap'])
                          .assign(tisspec_enh=lambda x: np.where(x.enh_rel_entropy > tisspec_thresh, 1, 0))
                          .drop_duplicates())
 

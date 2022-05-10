@@ -95,7 +95,7 @@ def create_enh_num_by_gene_df(enh_to_gene_df, gene_anno_df):
     if they have entropy > 0.6 as well.
     '''
     res = (enh_to_gene_df.groupby('target_gene', as_index=False)
-                         .agg({'enh_chrom':'count', 'tss':'mean', 'enh_rel_entropy':'mean', 'tisspec_enh':'sum'}))
+                         .agg({'enh_chrom':'count', 'enh_rel_entropy':'mean', 'tisspec_enh':'sum'}))
 
     # add in genes that don't have any assigned enhancers
     res = (gene_anno_df.merge(res, how='left', left_on='name', right_on='target_gene')
@@ -105,12 +105,9 @@ def create_enh_num_by_gene_df(enh_to_gene_df, gene_anno_df):
     # fill with 0 for genes with no enhancers or other tss in window
     res['enh_num'] = res.enh_num.fillna(0)
     res['tisspec_enh'] = res.tisspec_enh.fillna(0)
-    res['tss'] = res.tss.fillna(0)
 
     # because all windows with tss count themselves, counteract blanket nan to zero
-    res = res.assign(tss=lambda x: np.where(x.tss == 0, 1, x.tss),
-                     tss_bins=lambda x: pd.cut(x['tss'], bins=[0,1,2,3,4,8], labels=['1', '2', '3', '4','5+']),
-                     frac_tisspec_enh=lambda x: np.where(x.enh_num > 0, x.tisspec_enh/x.enh_num, np.NaN))
+    res = res.assign(frac_tisspec_enh=lambda x: np.where(x.enh_num > 0, x.tisspec_enh/x.enh_num, np.NaN))
     return res
 ### \\
 

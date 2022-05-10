@@ -99,7 +99,7 @@ for landscape_def in ['loop', 'contact']:
                                         .reset_index()
                                         .rename(columns={'level_4':'anno', 0:'val'})
                                         .query('val == 1')
-                                        .merge(all_tis.filter(['target_gene', 'tissue', 'cds_length', 'gene_length', 'enh_rel_entropy', 'frac_tisspec_enh_bins', 'frac_phastcons', 'tss']), how='inner', validate='m:1'))
+                                        .merge(all_tis.filter(['target_gene', 'tissue', 'cds_length', 'gene_length', 'enh_rel_entropy', 'frac_tisspec_enh_bins', 'frac_phastcons']), how='inner', validate='m:1'))
     ### \\
 
 
@@ -249,7 +249,7 @@ for landscape_def in ['loop', 'contact']:
                                .reset_index()
                                .rename(columns={'level_4':'anno', 0:'val'})
                                .query('val == 1')
-                               .merge(all_tis_exp.filter(['target_gene', 'gtex_exp', 'cds_length', 'gene_length', 'tissue', 'enh_rel_entropy', 'frac_tisspec_enh', 'frac_phastcons', 'tss']), how='inner', validate='m:1'))
+                               .merge(all_tis_exp.filter(['target_gene', 'gtex_exp', 'cds_length', 'gene_length', 'tissue', 'enh_rel_entropy', 'frac_tisspec_enh', 'frac_phastcons']), how='inner', validate='m:1'))
 
     enh_by_expgene_anno = enh_by_expgene_anno.assign(num_tisspec_enh=lambda x: x.enh_num * x.frac_tisspec_enh)
     enh_by_expgene_anno = enh_by_expgene_anno.assign(gtex_exp_log2=lambda x: np.log2(x.gtex_exp))
