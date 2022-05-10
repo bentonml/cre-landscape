@@ -15,7 +15,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 ### // constants and paths // ###
-EXP_DATA_PATH = f'../dat/2022-03-08'
+EXP_DATA_PATH = f'../dat/2022-05-10'
 RES_PATH = '..'
 FIG_PATH = f'{RES_PATH}/fig/{str(date.today())}'
 

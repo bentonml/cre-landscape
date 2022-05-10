@@ -20,7 +20,7 @@ from scipy import stats
 plt.switch_backend('agg')  # add to save plots non-interactively
 
 ### // constants and paths \\ ###
-EXP_DATA_PATH = f'../dat/2022-03-08'
+EXP_DATA_PATH = f'../dat/2022-05-10'
 RES_PATH = f'../fig/{str(date.today())}'
 
 # create a date stamped dir for files
