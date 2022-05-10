@@ -5,6 +5,7 @@ res/*/dat/*
 res/*/res/*
 
 res/*/stats_by_tissue*.txt
+res/*/*.txt
 
 bin/slurm/out/*
 
