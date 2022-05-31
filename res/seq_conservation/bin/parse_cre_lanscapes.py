@@ -5,13 +5,18 @@
 #   create CRE quartiles for each landscape definition
 ###
 
+import os
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
+from datetime import date
+
 
 # relative to bin/ dir
-DATA_PATH = '../../link_cre_to_genes/dat/2022-01-07'
-RES_PATH = '../dat'
+DATA_PATH = '../../link_cre_to_genes/dat/2022-05-10'
+RES_PATH = f'../dat/{str(date.today())}'
+
+# create a date stamped dir for files
+if not os.path.isdir(RES_PATH):
+    os.makedirs(RES_PATH)
 
 final_cols = ['enh_chrom', 'enh_start', 'enh_end', 'landscape_cre_num',
               'landscape_tisspec_cre_num', 'landscape_cre_quartile', 'landscape_cre_quartile_id']
@@ -40,4 +45,3 @@ def label_cre_quartiles(landscape_type):
 
 label_cre_quartiles(landscape_type='peakachuloop')
 label_cre_quartiles(landscape_type='hicQ05')
-

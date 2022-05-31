@@ -2,9 +2,8 @@
 # marylaurenbenton, 2021
 
 # pwd: /dors/capra_lab/users/bentonml/cross_species_gain_loss/results/cre_attr_overlap/bin
-for file in `ls ../dat/*.bed`;
+for file in `ls ../dat/2022-05-31/*.bed`;
 do
     lin='./linsight.py'
     python $lin $file
 done
-
