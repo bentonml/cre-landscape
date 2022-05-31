@@ -12,11 +12,7 @@ from datetime import date
 
 # relative to bin/ dir
 DATA_PATH = '../../link_cre_to_genes/dat/2022-05-10'
-RES_PATH = f'../dat/{str(date.today())}'
-
-# create a date stamped dir for files
-if not os.path.isdir(RES_PATH):
-    os.makedirs(RES_PATH)
+RES_PATH = f'../dat'
 
 final_cols = ['enh_chrom', 'enh_start', 'enh_end', 'landscape_cre_num',
               'landscape_tisspec_cre_num', 'landscape_cre_quartile', 'landscape_cre_quartile_id']
