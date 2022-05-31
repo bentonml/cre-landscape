@@ -19,8 +19,8 @@ import statsmodels.api as sm
 
 plt.switch_backend('agg')  # add to save plots non-interactively
 
-EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-03-08'
-MAT_DAT_PATH = f'../dat/2022-03-08'
+EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-05-10'
+MAT_DAT_PATH = f'../dat/2022-05-20'
 RES_PATH = f'../fig/{str(date.today())}'
 
 # create a date stamped dir for files

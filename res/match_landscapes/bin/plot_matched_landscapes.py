@@ -4,6 +4,7 @@
 #   created   | 2021.11.12
 #
 #   plot gene sets matched on covariates (expression level)
+#   tis_spec threshold = 0.3
 ###
 
 import os
@@ -19,8 +20,8 @@ import statsmodels.api as sm
 plt.switch_backend('agg')  # add to save plots non-interactively
 
 ### // constants and paths \\ ###
-EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-01-07'
-MAT_DAT_PATH = f'../dat/2022-01-10'
+EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-05-10'
+MAT_DAT_PATH = f'../dat/2022-05-20'
 RES_PATH = f'../fig/{str(date.today())}'
 
 # create a date stamped dir for files
@@ -35,6 +36,8 @@ tis_dict  = {'ovary':'Ovary', 'psoas_muscle':'Muscle', 'heart_left_ventricle':'H
              'lung':'Lung', 'spleen':'Spleen', 'small_intestine':'Small intestine',
              'pancreas':'Pancreas', 'liver':'Liver', 'brain_prefrontal_cortex':'Prefrontal cortex',
              'brain_hippocampus':'Hippocampus'}
+
+tisspec_thresh = 0.3
 
 # plotting options
 fmt='pdf'
@@ -51,6 +54,7 @@ def read_data(landscape_def):
         enh_num_by_gene = pd.read_table(infile)
         enh_num_by_gene = enh_num_by_gene.assign(rel_entropy_bins=lambda x: pd.cut(x['rel_entropy'], bins=10))
         enh_num_by_gene = enh_num_by_gene.assign(enh_rel_entropy_bins=lambda x: pd.cut(x['enh_rel_entropy'], bins=5))
+        enh_num_by_gene = enh_num_by_gene.assign(tis_spec=lambda x: np.where(x.rel_entropy > tisspec_thresh, 1, 0))
         enh_num_by_gene = enh_num_by_gene.assign(exp_nocat=lambda x: np.where((x.exp == 1) & (x.hk == 0) & (x.lof_intol == 0) & (x.essential == 0), 1, 0))
         enh_num_by_gene = enh_num_by_gene.assign(exp_broad=lambda x: np.where((x.exp == 1) & (x.tis_spec == 0), 1, 0))
         enh_num_by_gene = enh_num_by_gene.assign(log2_exp=lambda x: np.log2(x[tis] + 1))

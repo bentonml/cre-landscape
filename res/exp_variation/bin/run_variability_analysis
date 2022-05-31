@@ -1,7 +1,7 @@
 #!/bin/bash
 # marylaurenbenton, 2022
 
-ml GCC/10.2.0  OpenMPI/4.0.5  R/4.0.5 Anaconda3
+ml Anaconda3
 source activate enh_gain-loss
 
 mkdir -p ../dat ../res ../fig
@@ -9,8 +9,18 @@ mkdir -p ../dat ../res ../fig
 # calculate cv across individuals for genes in all tissues
 python calculate_gtex_cv_bytis.py
 
+# GCC required for R but doesn't play well with env numpy
+conda deactivate
+module purge
+ml GCC/10.2.0  OpenMPI/4.0.5  R/4.0.5
+
 # calculate residuals for cv
 Rscript calc_cv_resids.R
+
+# GCC required for R but doesn't play well with env numpy
+module purge
+ml Anaconda3
+source activate enh_gain-loss
 
 # summarize and visualize variability results
 python plot_cv_by_landscape_attr.py > ../res/README_`date +%F`

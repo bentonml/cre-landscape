@@ -4,6 +4,7 @@
 #   created   | 2021.11.12
 #
 #   compare gene sets matched on covariates (expression level)
+#   tis_spec threshold = 0.3
 ###
 
 import os
@@ -12,7 +13,7 @@ import numpy  as np
 from datetime import date
 
 ### // constants and paths \\ ###
-EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-01-07'
+EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-05-10'
 OUT_DAT_PATH = f'../dat/{str(date.today())}'
 
 # create a date stamped dir for files
@@ -20,6 +21,7 @@ if not os.path.isdir(OUT_DAT_PATH):
     os.makedirs(OUT_DAT_PATH)
 
 landscape_def = ['loop', 'contact']
+tisspec_thresh = 0.3
 
 tis_order = ['ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen',
              'small_intestine', 'pancreas', 'liver', 'brain_prefrontal_cortex', 'brain_hippocampus']
@@ -33,6 +35,7 @@ def read_data(landscape_def):
             infile = f'{EXP_DAT_PATH}/{tis}_gene_with_enh-count_frac-enh-spec_peakachuloop-linked.tsv'
         enh_num_by_gene = pd.read_table(infile)
         enh_num_by_gene = enh_num_by_gene.assign(exp_nocat=lambda x: np.where((x.exp == 1) & (x.hk == 0) & (x.lof_intol == 0) & (x.essential == 0), 1, 0))
+        enh_num_by_gene = enh_num_by_gene.assign(tis_spec=lambda x: np.where(x.rel_entropy > tisspec_thresh, 1, 0))
         enh_num_by_gene = enh_num_by_gene.assign(exp_broad=lambda x: np.where((x.exp == 1) & (x.tis_spec == 0), 1, 0))
         enh_num_by_gene = enh_num_by_gene.rename(columns={tis:'gtex_exp'})
         enh_num_by_gene = enh_num_by_gene.assign(tissue=tis)

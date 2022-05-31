@@ -11,8 +11,8 @@ library(readr)
 suppressMessages(library(dplyr))
 
 # constants and paths
-INDATE  <- '2022-01-10'
-RESDATE <- '2022-01-10'
+INDATE  <- '2022-05-20'
+RESDATE <- '2022-05-20'
 
 DORS <- '/dors/capra_lab/users/bentonml/cre_landscape'
 DATA <- paste(DORS, '/res/match_landscapes/dat/', INDATE, sep='')
