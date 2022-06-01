@@ -1,7 +1,7 @@
 #!/bin/bash
 # marylaurenbenton, 2021
 
-for file in `ls ../dat/2022-05-31/*.bed`;
+for file in `ls ../dat/*.bed`;
 do
     lin='./linsight.py'
     python $lin $file
