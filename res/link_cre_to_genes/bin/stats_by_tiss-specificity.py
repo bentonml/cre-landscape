@@ -72,14 +72,15 @@ for landscape_def in ['loop', 'contact']:
 
     # plot rel_entropy vs. housekeeping gene
     g = sns.catplot(x='hk', y='rel_entropy', col='tissue', data=all_tis_exp,
-                order=[0, 1], palette=['tab:gray', 'tab:green'], col_order=tis_order,
-                kind='box', col_wrap=5, showfliers=True, fliersize=1)
+                    order=[0, 1], palette=['tab:gray', 'tab:green'], col_order=tis_order,
+                    kind='box', col_wrap=5, showfliers=True, fliersize=1.5)
     for ax in g.axes.flatten():
         ax.axhline(y=0.6, c='.3', linestyle='--')
         ax.axhline(y=0.4, c='.3', linestyle='--')
         ax.axhline(y=0.2, c='.3', linestyle='--')
     facet_titles(g.axes)
     facet_x_axis(g.axes, '')
+    plt.tight_layout()
     plt.savefig(f'{FIG_PATH}/all_{landscape_def}_rel-entropy_bytissue_v_hkstatus_boxplot.{fmt}', format=fmt, dpi=400)
     plt.close()
 
