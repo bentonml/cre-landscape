@@ -325,6 +325,7 @@ for landscape_def in ['loop', 'contact']:
     ### fig/table: log exp v. # CRE stats to file
     logging.info('Correlation between log2 expression and CRE decile, test 1st v. 4th')
     for tis_name in tis_order:
+        nonzero = all_tis_exp.query(f'enh_num>0 & tissue=="{tis_name}"').assign(exp_bins=lambda x: pd.qcut(x['log2_exp'], q=4, labels=[1,2,3,4]))
         rho, corrp = stats.spearmanr(nonzero.query(f'tissue=="{tis_name}"').enh_num, nonzero.query(f'tissue=="{tis_name}"').log2_exp)
         ts, p = stats.mannwhitneyu(nonzero.query(f'tissue=="{tis_name}" & exp_bins == 1').enh_num,
                                    nonzero.query(f'tissue=="{tis_name}" & exp_bins == 4').enh_num)
