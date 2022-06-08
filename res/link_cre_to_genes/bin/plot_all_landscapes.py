@@ -21,7 +21,8 @@ plt.switch_backend('agg')  # add to save plots non-interactively
 
 ### // constants and paths \\ ###
 EXP_DATA_PATH = f'../dat/2022-05-10'
-RES_PATH = f'../fig/{str(date.today())}'
+#RES_PATH = f'../fig/{str(date.today())}'
+RES_PATH = f'../fig/2022-05-10'
 
 # create a date stamped dir for files
 if not os.path.isdir(RES_PATH):
@@ -331,11 +332,12 @@ for landscape_def in ['loop', 'contact']:
                                    nonzero.query(f'tissue=="{tis_name}" & exp_bins == 4').enh_num)
         logging.info(f'{tis_name}, 1stv4th p = {p:.3}, spearmanR = {rho:.3}, p = {corrp:.3}')
 
-    logging.info('Median # CRE per CRE quartile')
-    logging.info(nonzero.groupby(['tissue', 'exp_bins']).enh_num.median().to_string())
+        logging.info('Median # CRE per CRE quartile')
+        logging.info(nonzero.groupby(['tissue', 'exp_bins']).enh_num.median().to_string())
     ### end_fig
 
     ### fig/table: log stats to file, kw # CRE
+    logging.info('KW between CRE # and gene type (hk, lof, expressed)')
     for tis in tis_order:
         logging.info(f'Running enhancer number Kruskal Wallis on {tis}')
         ts, p = stats.kruskal(*[group['enh_num'].values for name, group in enh_by_expgene_anno.query(f'tissue=="{tis}" & anno!="expressed" & anno!="essential"').groupby('anno')])
