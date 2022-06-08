@@ -81,7 +81,7 @@ for landscape_def in ['loop', 'contact']:
 
     ### // full hk and lof sets \\ ###
     for tis in tis_order:
-        df = read_matched_data(tis=tis, landscape_type=landscape_def, gene_type='hk')
+        df = read_matched_data(tis=tis, gene_type='hk', landscape_type=landscape_def)
         merged = df.merge(all_tis_exp.query(f'tissue=="{tis}"'), how='left')
 
         with sns.plotting_context("paper", rc=rc):
@@ -112,15 +112,19 @@ for landscape_def in ['loop', 'contact']:
             plt.close()
             ### end_fig
 
-            ### fig: plot boxplot of hk v. expressed by cre_num, matched, nofliers
+            ### fig: plot boxplot of hk v. expressed by cre_num, matched, notch, nofliers
             g = sns.catplot(x='anno', y='enh_num', data=merged, kind='box',
-                            palette=['tab:green', 'tab:blue'], order=['Housekeeping', 'Expressed'], showfliers=False)
+                            notch=True, order=['Housekeeping', 'Expressed'],
+                            hue='anno', hue_order=['Housekeeping', 'Expressed'],
+                            palette=['tab:green', 'tab:blue'], dodge=False,
+                            showfliers=False, width=.65, height=4.5, aspect=.8)
             ts, p = stats.mannwhitneyu(merged.query(f'anno=="Housekeeping"').enh_num, merged.query(f'anno=="Expressed"').enh_num)
             if p < 0.01:
-                plt.text(0.5, g.ax.get_ylim()[1]+1, f'p = {p:.1e}', horizontalalignment='center')
+              plt.text(0.5, g.ax.get_ylim()[1]+1, f'p = {p:.1e}', horizontalalignment='center')
             else:
-                plt.text(0.5, g.ax.get_ylim()[1]+1, f'p = {p:.2f}', horizontalalignment='center')
+              plt.text(0.5, g.ax.get_ylim()[1]+1, f'p = {p:.2f}', horizontalalignment='center')
             g.set_xlabels('')
+            g.set_xticklabels(['HK', 'Expressed'])
             g.set_ylabels('Number of CREs')
             plt.tight_layout()
             plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXenh-num_hk_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
@@ -144,23 +148,27 @@ for landscape_def in ['loop', 'contact']:
 
             ### fig: plot boxplot of hk v. expressed by % phastcons, matched, nofliers
             g = sns.catplot(x='anno', y='frac_phastcons', data=merged, kind='box',
-                            palette=['tab:green', 'tab:blue'], order=['Housekeeping', 'Expressed'], showfliers=False)
+                            notch=True, order=['Housekeeping', 'Expressed'],
+                            hue='anno', hue_order=['Housekeeping', 'Expressed'],
+                            palette=['tab:green', 'tab:blue'], dodge=False,
+                            showfliers=False, width=.65, height=4.5, aspect=.8)
             ts, p = stats.mannwhitneyu(merged.query(f'anno=="Housekeeping"').frac_phastcons, merged.query(f'anno=="Expressed"').frac_phastcons)
             if p < 0.01:
                 plt.text(0.5, g.ax.get_ylim()[1], f'p = {p:.1e}', horizontalalignment='center')
             else:
                 plt.text(0.5, g.ax.get_ylim()[1], f'p = {p:.2f}', horizontalalignment='center')
             g.set_xlabels('')
+            g.set_xticklabels(['HK', 'Expressed'])
             g.set_ylabels('% PhastCons')
             plt.tight_layout()
             plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXphastcons_hk_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
-        # print MWU stats
-        _, cre_p = stats.mannwhitneyu(merged.query(f'anno=="Housekeeping"').enh_num, merged.query(f'anno=="Expressed"').enh_num)
-        _, phast_p = stats.mannwhitneyu(merged.query(f'anno=="Housekeeping"').frac_phastcons, merged.query(f'anno=="Expressed"').frac_phastcons)
-        print(f'{tis}\tHousekeeping\t{cre_p}\t{phast_p}')
+        # # print MWU stats
+        # _, cre_p = stats.mannwhitneyu(merged.query(f'anno=="Housekeeping"').enh_num, merged.query(f'anno=="Expressed"').enh_num)
+        # _, phast_p = stats.mannwhitneyu(merged.query(f'anno=="Housekeeping"').frac_phastcons, merged.query(f'anno=="Expressed"').frac_phastcons)
+        # print(f'{tis}\tHousekeeping\t{cre_p}\t{phast_p}')
 
         df = read_matched_data(tis=tis, gene_type='lof', landscape_type=landscape_def)
         merged = df.merge(all_tis_exp.query(f'tissue=="{tis}"'), how='left')
@@ -181,7 +189,7 @@ for landscape_def in ['loop', 'contact']:
             plt.close()
             ### end_fig
 
-            ### fig: ecdf of hk v. expressed by cre_num, matched
+            ### fig: ecdf of lof v. expressed by cre_num, matched
             g = sns.displot(hue='anno', y='enh_num', data=merged, kind='ecdf',
                             palette=['tab:orange', 'tab:blue'], hue_order=['LoF Intolerant', 'Expressed'],
                             aspect=1, legend=False)
@@ -196,6 +204,22 @@ for landscape_def in ['loop', 'contact']:
             ### fig: plot boxplot of lof v. expressed by cre_num, matched, nofliers
             g = sns.catplot(x='anno', y='enh_num', data=merged, kind='box',
                             palette=['tab:orange', 'tab:blue'], order=['LoF Intolerant', 'Expressed'], showfliers=False)
+            ts, p = stats.mannwhitneyu(merged.query(f'anno=="LoF Intolerant"').enh_num, merged.query(f'anno=="Expressed"').enh_num)
+            if p < 0.01:
+                plt.text(0.5, g.ax.get_ylim()[1]+1, f'p = {p:.1e}', horizontalalignment='center')
+            else:
+                plt.text(0.5, g.ax.get_ylim()[1]+1, f'p = {p:.2f}', horizontalalignment='center')
+            g.set_xlabels('')
+            g.set_ylabels('Number of CREs')
+            plt.tight_layout()
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXenh-num_lof_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
+            plt.close()
+            ### end_fig
+
+            ### fig: plot boxplot of lof v. expressed by cre_num, matched, notch, nofliers
+            g = sns.catplot(x='anno', y='enh_num', data=merged, kind='box', notch=True,
+                        hue='anno', hue_order=['LoF Intolerant', 'Expressed'], palette=['tab:orange', 'tab:blue'],
+                        dodge=False, showfliers=False, width=.65, height=4.5, aspect=.8)
             ts, p = stats.mannwhitneyu(merged.query(f'anno=="LoF Intolerant"').enh_num, merged.query(f'anno=="Expressed"').enh_num)
             if p < 0.01:
                 plt.text(0.5, g.ax.get_ylim()[1]+1, f'p = {p:.1e}', horizontalalignment='center')
@@ -223,9 +247,12 @@ for landscape_def in ['loop', 'contact']:
             plt.close()
             ### end_fig
 
-            ### fig: plot boxplot of hk v. expressed by % phastcons, matched, nofliers
+            ### fig: plot boxplot of lof v. expressed by % phastcons, matched, notch, nofliers
             g = sns.catplot(x='anno', y='frac_phastcons', data=merged, kind='box',
-                            palette=['tab:orange', 'tab:blue'], order=['LoF Intolerant', 'Expressed'], showfliers=False)
+                            notch=True, order=['LoF Intolerant', 'Expressed'],
+                            hue='anno', hue_order=['LoF Intolerant', 'Expressed'],
+                            palette=['tab:orange', 'tab:blue'], dodge=False,
+                            showfliers=False, width=.65, height=4.5, aspect=.8)
             ts, p = stats.mannwhitneyu(merged.query(f'anno=="LoF Intolerant"').frac_phastcons, merged.query(f'anno=="Expressed"').frac_phastcons)
             if p < 0.01:
                 plt.text(0.5, g.ax.get_ylim()[1], f'p = {p:.1e}', horizontalalignment='center')
@@ -238,10 +265,10 @@ for landscape_def in ['loop', 'contact']:
             plt.close()
             ### end_fig
 
-        # print MWU stats
-        _, cre_p = stats.mannwhitneyu(merged.query(f'anno=="LoF Intolerant"').enh_num, merged.query(f'anno=="Expressed"').enh_num)
-        _, phast_p = stats.mannwhitneyu(merged.query(f'anno=="LoF Intolerant"').frac_phastcons, merged.query(f'anno=="Expressed"').frac_phastcons)
-        print(f'{tis}\tLoF Intolerant\t{cre_p}\t{phast_p}')
+        # # print MWU stats
+        # _, cre_p = stats.mannwhitneyu(merged.query(f'anno=="LoF Intolerant"').enh_num, merged.query(f'anno=="Expressed"').enh_num)
+        # _, phast_p = stats.mannwhitneyu(merged.query(f'anno=="LoF Intolerant"').frac_phastcons, merged.query(f'anno=="Expressed"').frac_phastcons)
+        # print(f'{tis}\tLoF Intolerant\t{cre_p}\t{phast_p}')
     ### \\
 
 
@@ -297,7 +324,7 @@ for landscape_def in ['loop', 'contact']:
             plt.close()
             ### end_fig
 
-            ### fig: plot boxplot of hk v. expressed by % phastcons, matched, fliers
+            ### fig: plot boxplot of hk v. expressed by % phastcons, matched, nofliers
             g = sns.catplot(x='anno', y='frac_phastcons', data=merged, kind='box',
                             notch=True, order=['Housekeeping', 'Expressed'],
                             hue='anno', hue_order=['Housekeeping', 'Expressed'],
@@ -438,6 +465,56 @@ for landscape_def in ['loop', 'contact']:
             ### end_fig
     ### \\
 
+    ### // write p value table \\ ###
+    hrows = []
+    lrows = []
+
+    print('')
+    print(f'tisue\tmed_cre_num_expressed\tmed_cre_num_housekeeping\tmed_frac_phastcons_expressed\tmed_frac_phastcons_housekeeping')
+    for tis in tis_order:
+        df = read_matched_data(tis=tis, gene_type='hk', landscape_type=landscape_def)
+        merged = df.merge(all_tis_exp.query(f'tissue=="{tis}"'), how='left')
+
+        # print medians
+        cre_med = merged.groupby('anno').enh_num.median()
+        phast_med = merged.groupby('anno').frac_phastcons.median()
+        print(f'{tis}\t{cre_med["Expressed"]}\t{cre_med["Housekeeping"]}\t{phast_med["Expressed"]}\t{phast_med["Housekeeping"]}')
+
+        # print MWU stats
+        _, cre_p = stats.mannwhitneyu(merged.query(f'anno=="Housekeeping"').enh_num, merged.query(f'anno=="Expressed"').enh_num)
+        _, phast_p = stats.mannwhitneyu(merged.query(f'anno=="Housekeeping"').frac_phastcons, merged.query(f'anno=="Expressed"').frac_phastcons)
+        _, frac_p = stats.mannwhitneyu(merged.query(f'anno=="Housekeeping"').frac_tisspec_enh, merged.query(f'anno=="Expressed"').frac_tisspec_enh)
+        hrows.append([tis, 'housekeeping', cre_p, phast_p, frac_p])
+
+    print('')
+    print(f'tisue\tmed_cre_num_expressed\tmed_cre_num_lof\tmed_frac_phastcons_expressed\tmed_frac_phastcons_lif')
+    for tis in tis_order:
+        df = read_matched_data(tis=tis, gene_type='lof', landscape_type=landscape_def)
+        merged = df.merge(all_tis_exp.query(f'tissue=="{tis}"'), how='left')
+
+        # print medians
+        cre_med = merged.groupby('anno').enh_num.median()
+        phast_med = merged.groupby('anno').frac_phastcons.median()
+        print(f'{tis}\t{cre_med["Expressed"]}\t{cre_med["LoF Intolerant"]}\t{phast_med["Expressed"]}\t{phast_med["LoF Intolerant"]}')
+
+        # print MWU stats
+        _, cre_p = stats.mannwhitneyu(merged.query(f'anno=="LoF Intolerant"').enh_num, merged.query(f'anno=="Expressed"').enh_num)
+        _, phast_p = stats.mannwhitneyu(merged.query(f'anno=="LoF Intolerant"').frac_phastcons, merged.query(f'anno=="Expressed"').frac_phastcons)
+        _, frac_p = stats.mannwhitneyu(merged.query(f'anno=="LoF Intolerant"').frac_tisspec_enh, merged.query(f'anno=="Expressed"').frac_tisspec_enh)
+        lrows.append([tis, 'lof_intolerant', cre_p, phast_p, frac_p])
+
+    hdf = pd.DataFrame(hrows, columns=['tissue', 'genetype', 'cre_num_p', 'phastcons_p', 'frac_tisspec_p'])
+    hdf = hdf.assign(cre_num_fdr=lambda x: sm.stats.multipletests(x.cre_num_p, alpha=0.05, method='fdr_bh')[1],
+                     phastcons_fdr=lambda x: sm.stats.multipletests(x.phastcons_p, alpha=0.05, method='fdr_bh')[1],
+                     frac_tisspec_fdr=lambda x: sm.stats.multipletests(x.frac_tisspec_p, alpha=0.05, method='fdr_bh')[1])
+    hdf.to_csv(f'../res/housekeeping_{landscape_def}_df.out', sep='\t', index=False, header=True)
+
+    ldf = pd.DataFrame(lrows, columns=['tissue', 'genetype', 'cre_num_p', 'phastcons_p', 'frac_tisspec_p'])
+    ldf = ldf.assign(cre_num_fdr=lambda x: sm.stats.multipletests(x.cre_num_p, alpha=0.05, method='fdr_bh')[1],
+                     phastcons_fdr=lambda x: sm.stats.multipletests(x.phastcons_p, alpha=0.05, method='fdr_bh')[1],
+                     frac_tisspec_fdr=lambda x: sm.stats.multipletests(x.frac_tisspec_p, alpha=0.05, method='fdr_bh')[1])
+    ldf.to_csv(f'../res/lof-intol_{landscape_def}_df.out', sep='\t', index=False, header=True)
+    ### \\
 
     ### // write p value table, CRE > 0 \\ ###
     hrows = []
