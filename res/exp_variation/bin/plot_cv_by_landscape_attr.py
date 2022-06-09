@@ -121,6 +121,14 @@ for landscape_def in ['loop', 'contact']:
             plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_expVar_heatmap.{fmt}', format=fmt, dpi=400)
             plt.close()
 
+            print(f'{tis}, spearman')
+            with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 150):
+                print(corr)
+
+            print(f'{tis}, p-values')
+            with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 150, 'display.precision', 8):
+                corr_p = df_merge.filter(['Expression variation', 'Tissue-specificity (gene)', '# CREs', '% tissue-specific CREs', '% PhastCons']).corr(method=spearman_pval)
+                print(corr_p)
 
             gt0 = df_merge[df_merge['# CREs'] > 0]
             corr = gt0.filter(['Expression variation', 'Tissue-specificity (gene)', '# CREs', '% tissue-specific CREs', '% PhastCons']).corr('spearman')
@@ -134,22 +142,13 @@ for landscape_def in ['loop', 'contact']:
             plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_expVar_heatmap_gt0.{fmt}', format=fmt, dpi=400)
             plt.close()
 
-            print(f'{tis}, CRE > 0, spearman')
-            with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 150):
-                print(corr)
-
-            print(f'{tis}, CRE > 0, p-values')
-            with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 150):
-                corr_p = gt0.filter(['Expression variation', 'Tissue-specificity (gene)', '# CREs', '% tissue-specific CREs', '% PhastCons']).corr(method=spearman_pval)
-                print(corr_p)
-
 
 for landscape_def in ['loop', 'contact']:
-    dfs = []
     # create dataframe of enhancer number by gene with all tissues
     all_tis = read_data(landscape_def)
 
     # create dataframe of all tissues
+    dfs = []
     for tis in tis_order:
         df = read_cv_data(tis)
         tis_exp = all_tis[all_tis['exp']==1].query(f'tissue=="{tis}"')
@@ -163,10 +162,13 @@ for landscape_def in ['loop', 'contact']:
     # combine all tissues
     df_corr = pd.concat(dfs).set_index('Tissue').drop(columns='Expression variation')
 
+    print(f'all tissues, {landscape_def}, spearman')
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 150):
+        print(df_corr)
 
-    # plot heatmap of all tissues
+    # plot spearman heatmap of all tissues
     with sns.plotting_context("paper", rc=rc):
-        f, ax = plt.subplots(figsize=(12, 9))
+        f, ax = plt.subplots(figsize=(9, 9))
         cmap = sns.diverging_palette(240, 10, as_cmap=True)
         g = sns.heatmap(df_corr, cmap=cmap, vmax=1, center=0, vmin=-1,
                         square=True, linewidths=.5, cbar_kws={"shrink": .5}, annot=True)
@@ -174,5 +176,24 @@ for landscape_def in ['loop', 'contact']:
         g.set_yticklabels(tis_names)
         g.set_ylabel('')
         plt.tight_layout()
-        plt.savefig(f'{RES_PATH}/{landscape_def}_expVar_heatmap_alltis.{fmt}', format=fmt, dpi=400)
+        plt.savefig(f'{RES_PATH}/{landscape_def}_expVar_heatmap_alltis_spearman.{fmt}', format=fmt, dpi=400)
         plt.close()
+
+    # create dataframe of all tissues' p values
+    dfs = []
+    for tis in tis_order:
+        df = read_cv_data(tis)
+        tis_exp = all_tis[all_tis['exp']==1].query(f'tissue=="{tis}"')
+        df_merge = df.merge(tis_exp, left_on='Name', right_on='target_gene', how='inner', validate='1:1')
+        df_merge = df_merge.rename(columns={'loess_resid':'Expression variation', 'rel_entropy':'Tissue-specificity (gene)',
+                                    'enh_num':'# CREs', 'frac_tisspec_enh':'% tissue-specific CREs', 'frac_phastcons':'% PhastCons'})
+        corr = df_merge.filter(['Expression variation', 'Tissue-specificity (gene)', '# CREs', '% tissue-specific CREs', '% PhastCons']).corr(method=spearman_pval)
+        d = pd.DataFrame(corr['Expression variation']).T.assign(Tissue=tis)
+        dfs.append(d)
+
+    # combine all tissues
+    df_corr_p = pd.concat(dfs).set_index('Tissue').drop(columns='Expression variation')
+    print(f'all tissues, {landscape_def}, p-values')
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 150, 'display.precision', 8):
+        print(df_corr_p)
+
