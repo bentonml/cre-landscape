@@ -11,15 +11,24 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # relative to current dir
-DATA_PATH = '../../link_cre_to_genes/dat/2022-01-07'
+DATA_PATH = '../../link_cre_to_genes/dat/2022-05-10'
 RES_PATH = '../dat'
 
-# create a date stamped dir for files
+# create dir for files
 if not os.path.isdir(RES_PATH):
     os.makedirs(RES_PATH)
 
 final_cols = ['enh_chrom', 'enh_start', 'enh_end', 'landscape_cre_num',
               'landscape_tisspec_cre_num', 'landscape_cre_quartile', 'landscape_cre_quartile_id']
+
+def create_full_cre_bed(landscape_type):
+    for tis in ['ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen',
+                'small_intestine', 'pancreas', 'liver', 'brain_prefrontal_cortex', 'brain_hippocampus']:
+
+        # read in CRE and landscape data
+        cre = pd.read_table(f'{DATA_PATH}/{tis}_enh_to_gene_{landscape_type}-linked.tsv').filter(['enh_chrom', 'enh_start', 'enh_end']).drop_duplicates()
+        cre.to_csv(f'{RES_PATH}/{tis}_{landscape_type}_cre_full.bed', sep='\t', index=False, header=False)
+
 
 def create_cre_quartiles(landscape_type):
     for tis in ['ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen',
@@ -48,6 +57,10 @@ def create_cre_quartiles(landscape_type):
                          .drop_duplicates()
                          .to_csv(f'{RES_PATH}/{tis}_{landscape_type}_cre_quart{q}.bed', sep='\t',
                                  index=False, header=False))
+
+
+create_full_cre_bed('peakachuloop')
+create_full_cre_bed('hicQ05')
 
 create_cre_quartiles('peakachuloop')
 create_cre_quartiles('hicQ05')
