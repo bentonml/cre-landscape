@@ -1,0 +1,12 @@
+#!/bin/bash
+# marylaurenbenton, 2022
+#
+# this script will run enrichment script with autopopulated tissue 
+# name for the output file
+
+for tis in ovary psoas_muscle heart_left_ventricle lung spleen small_intestine pancreas liver brain_prefrontal_cortex brain_hippocampus;
+do
+    echo $tis
+    ./slurm/gtex_enrichment_peakachuloop_local $tis peakachuloop
+done
+

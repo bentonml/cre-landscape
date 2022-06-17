@@ -1,0 +1,27 @@
+#!/bin/bash
+#
+#   requires:
+#       ml Anaconda3
+#       source activate enh_gain-loss
+#
+#   uses scripts:
+#       ../resources/bin/calculate_enrichment.py 
+###
+
+tis=$1
+lndscp=$2
+output="../res/$(date +%F)_${tis}_eqtl_hicQ05_enrichment.out" 
+
+run_enrichment='/dors/capra_lab/users/bentonml/resources/bin/calculate_enrichment.py'
+var_path='../dat/variants'
+cre_path='../dat'
+iters=1000
+
+# gtex v8 eQTL 
+time python $run_enrichment -i $iters -n 8  --print_counts_to $cre_path/${tis}_${lndscp}_cre_full.counts $cre_path/${tis}_${lndscp}_cre_full.bed $var_path/${tis}_gtex_v8_hg19_signif.bed >  $output
+
+#time python $run_enrichment -i $iters -n 8 $cre_path/${tis}_${lndscp}_cre_quart1.bed --print_counts_to $cre_path/${tis}_${lndscp}_cre_quart1.counts $var_path/${tis}_gtex_v8_hg19_signif.bed >  $output
+#time python $run_enrichment -i $iters -n 8 $cre_path/${tis}_${lndscp}_cre_quart2.bed --print_counts_to $cre_path/${tis}_${lndscp}_cre_quart2.counts $var_path/${tis}_gtex_v8_hg19_signif.bed >> $output
+#time python $run_enrichment -i $iters -n 8 $cre_path/${tis}_${lndscp}_cre_quart3.bed --print_counts_to $cre_path/${tis}_${lndscp}_cre_quart3.counts $var_path/${tis}_gtex_v8_hg19_signif.bed >> $output
+#time python $run_enrichment -i $iters -n 8 $cre_path/${tis}_${lndscp}_cre_quart4.bed --print_counts_to $cre_path/${tis}_${lndscp}_cre_quart4.counts $var_path/${tis}_gtex_v8_hg19_signif.bed >> $output
+

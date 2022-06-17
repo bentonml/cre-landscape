@@ -45,13 +45,8 @@ def read_enrichment_output_quartile(tissue, landscape_type, date, path):
         for q in ['q1', 'q2', 'q3', 'q4']:
             next(res_file)  # skip command line
             next(res_file)  # skip header line
-            #next(res_file)  # skip iterations line
             line = res_file.readline().strip('\n').split('\t')
             res.append([tissue, q] + line)
-            # next(res_file)  # skip the timing lines
-            # next(res_file)
-            # next(res_file)
-            # next(res_file)
     return res
 
 
@@ -103,16 +98,6 @@ def calculate_fc_distribution(obs, exp_list):
     return np.array([(obs + 1.0) / (exp + 1.0) for exp in exp_list])
 
 
-def calculate_empirical_p(obs_fc_a, fc_list_a, obs_fc_b, fc_list_b):
-    delta_final = obs_fc_a - obs_fc_b
-    delta_dist  = [fc_list_a[i] - fc_list_b[i] for i in range(len(fc_list_a))]
-
-    # sum number of differences >= to observed difference
-    p_sum = sum(1 for delta in delta_dist if abs(delta) >= abs(delta_final))
-
-    return (p_sum + 1.0) / (len(delta_dist) + 1.0)
-
-
 def facet_titles(axes):
     ax = axes.flatten()
     ax[0].set_title('Spleen')
@@ -136,6 +121,7 @@ def add_hline(axes):
     for ax in axes.flatten():
         ax.axhline(0, c='k')
 
+
 def add_vline(axes):
     for ax in axes.flatten():
         ax.axvline(0, c='k')
@@ -150,11 +136,16 @@ for landscape in ['peakachuloop', 'hicQ05']:
     with sns.plotting_context("paper", rc=rc):
         g = sns.catplot(x='log2FoldChange', y='tissue', data=eqtl_full, kind='bar',
                         hue='bonf_signif', hue_order=['*', 'NS'], dodge=False,
-                        palette=['#2171b5', '#bdd7e7'])
-        g.set(xlim=(-0.1, None), ylabel='', xlabel=r'log$_2$(Fold Change)')
+                        palette=['#2171b5', '#bdd7e7'], legend=False)
+        g.set(xlim=(-0.1, 1.4), ylabel='', xlabel=r'log$_2$(Fold Change)')
         g.set_yticklabels(tis_names)
-        g._legend.set_title('Significance')
+        #g._legend.set_title('Significance')
+        if landscape == 'peakachuloop':
+            plt.legend(loc='upper right', title='Significance', frameon=False)
+        else:
+            plt.legend(loc='lower right', title='Significance', frameon=False)
         add_vline(g.axes)
+        plt.tight_layout()
         plt.savefig(f'{FIG_PATH}/{str(date.today())}_{landscape}_eqtl_full_barplot.{fmt}', format=fmt, dpi=400)
         plt.close()
 
@@ -173,6 +164,7 @@ for landscape in ['peakachuloop', 'hicQ05']:
         g.set(ylabel='', xlabel=r'Overlap (bp)')
         g.set_yticklabels(tis_names)
         sns.despine()
+        plt.tight_layout()
         plt.savefig(f'{FIG_PATH}/{str(date.today())}_{landscape}_eqtl_full_boxplot_with_counts.{fmt}', format=fmt, dpi=400)
         plt.close()
 
@@ -194,6 +186,7 @@ for landscape in ['peakachuloop', 'hicQ05']:
         g.set_xticklabels(['1', '2', '3', '4'])
         g._legend.set_title('')
         add_hline(g.axes)
+        plt.tight_layout()
         plt.savefig(f'{FIG_PATH}/{str(date.today())}_{landscape}_eqtl_barplot.{fmt}', format=fmt, dpi=400)
         plt.close()
 
@@ -219,6 +212,7 @@ for landscape in ['peakachuloop', 'hicQ05']:
         g.fig.subplots_adjust(hspace=0.25, wspace=.25)
         g.set(ylabel=r'log$_2$(Fold Change)', xlabel='CRE landscape quartile')
         facet_titles(g.axes)
+        plt.tight_layout()
         plt.savefig(f'{FIG_PATH}/{str(date.today())}_{landscape}_eqtl_quartile_boxplot.{fmt}', format=fmt, dpi=400)
         plt.close()
 
@@ -231,6 +225,7 @@ for landscape in ['peakachuloop', 'hicQ05']:
         g.set(ylabel='Overlap (bp)', xlabel='CRE landscape quartile')
         facet_titles(g.axes)
         plt.savefig(f'{FIG_PATH}/{str(date.today())}_{landscape}_eqtl_quartile_violinplot_with_counts.{fmt}', format=fmt, dpi=400)
+        plt.tight_layout()
         plt.close()
 
     for tis in tissues:
@@ -242,4 +237,4 @@ for landscape in ['peakachuloop', 'hicQ05']:
 
         # ts, p = mannwhitneyu(fc_list_a, fc_list_b, equal_var=False)
         ts, p = mannwhitneyu(fc_list_a, fc_list_b, alternative="greater")
-        print(f'{tis}: {np.median(fc_list_a):.2f} v. {np.median(fc_list_b):.2f}  {ts} (p = {p:.3e})')
+        print(f'{tis}: {np.median(fc_list_a):.2f} v. {np.median(fc_list_b):.2f} (p = {p:.3e})')
