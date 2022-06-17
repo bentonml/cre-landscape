@@ -25,8 +25,8 @@ cre_path='../dat'
 iters=1000
 
 # gtex v8 eQTL 
-time python $run_enrichment -i $iters $cre_path/${tis}_${lndscp}_cre_quart1.bed $var_path/${tis}_gtex_v8_hg19_signif.bed
-time python $run_enrichment -i $iters $cre_path/${tis}_${lndscp}_cre_quart2.bed $var_path/${tis}_gtex_v8_hg19_signif.bed
-time python $run_enrichment -i $iters $cre_path/${tis}_${lndscp}_cre_quart3.bed $var_path/${tis}_gtex_v8_hg19_signif.bed
-time python $run_enrichment -i $iters $cre_path/${tis}_${lndscp}_cre_quart4.bed $var_path/${tis}_gtex_v8_hg19_signif.bed
+time python $run_enrichment -i $iters -n 16 --print_counts_to $cre_path/${tis}_${lndscp}_cre_quart1.counts $cre_path/${tis}_${lndscp}_cre_quart1.bed $var_path/${tis}_gtex_v8_hg19_signif.bed
+time python $run_enrichment -i $iters -n 16 --print_counts_to $cre_path/${tis}_${lndscp}_cre_quart2.counts $cre_path/${tis}_${lndscp}_cre_quart2.bed $var_path/${tis}_gtex_v8_hg19_signif.bed
+time python $run_enrichment -i $iters -n 16 --print_counts_to $cre_path/${tis}_${lndscp}_cre_quart3.counts $cre_path/${tis}_${lndscp}_cre_quart3.bed $var_path/${tis}_gtex_v8_hg19_signif.bed
+time python $run_enrichment -i $iters -n 16 --print_counts_to $cre_path/${tis}_${lndscp}_cre_quart4.counts $cre_path/${tis}_${lndscp}_cre_quart4.bed $var_path/${tis}_gtex_v8_hg19_signif.bed
 
