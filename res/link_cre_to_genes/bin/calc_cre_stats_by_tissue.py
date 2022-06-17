@@ -21,7 +21,7 @@ import seaborn as sns
 DATA_PATH = '../../../dat'           # relative to current dir
 GEN_DATA_PATH = '../../../../data'
 DORS_DATA_PATH = '../../../../../../data'
-RES_PATH = '../'
+RES_PATH = '..'
 
 # create output file handle
 f = open(f'{RES_PATH}/stats_by_tissue_peakachuloop_{str(date.today())}.txt',"w")
@@ -64,6 +64,14 @@ tis_to_loop = {'ovary':'Schmitt_2016.Ovary.hg19.peakachu-merged.loops',
                'liver':'Leung_2015.Liver.hg19.peakachu-merged.loops',
                'brain_prefrontal_cortex':'Schmitt_2016.Cortex_DLPFC.hg19.peakachu-merged.loops',
                'brain_hippocampus':'Schmitt_2016.Hippocampus.hg19.peakachu-merged.loops'}
+
+tis_order = ['spleen','liver', 'heart_left_ventricle', 'brain_hippocampus', 'lung', 'pancreas',
+                     'brain_prefrontal_cortex', 'psoas_muscle', 'small_intestine', 'ovary']
+
+tis_names = {'spleen':'Spleen', 'liver':'Liver', 'heart_left_ventricle':'Heart', 'brain_hippocampus':'Hippocampus',
+             'lung':'Lung', 'pancreas':'Pancreas', 'brain_prefrontal_cortex':'Prefrontal cortex',
+             'psoas_muscle':'Muscle', 'small_intestine':'Small intestine', 'ovary':'Ovary'}
+
 ### \\
 
 
@@ -408,14 +416,26 @@ for tis in ['ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen', '
     hic_pairs_anno = create_hic_df_anno(hic_pairs, row_enh_count, row_gene_count, col_enh_count, col_gene_count)
 
     ### fig: edcf of hic interactions with annotations
-    map_dict = {0:'No annotation', 1:'Annotion in both anchors', 2: 'CRE to gene annotation'}
+    map_dict = {0:'No annotation', 1:'Annotation in both anchors', 2: 'CRE to gene annotation'}
     hic_cdf = hic_pairs_anno.assign(intanno=lambda x: np.where(((x.re_count > 0) & (x.cg_count > 0)) | ((x.rg_count > 0) & (x.ce_count > 0)), 2,
                                     np.where((x.re_count == 0) & (x.cg_count == 0) & (x.rg_count == 0) & (x.ce_count == 0), 0, 1)))
     hic_cdf["Type"] = hic_cdf["intanno"].map(map_dict)
     with sns.plotting_context("paper", rc=rc):
-        g = sns.displot(x='q', hue='Type', data=hic_cdf, kind='ecdf', palette='Reds', hue_order=['No annotation', 'Annotion in both anchors','CRE to gene annotation'])
-        sns.move_legend(g, 'center right')
+        g = sns.displot(x='q', hue='Type', data=hic_cdf, kind='ecdf', palette='Reds', hue_order=['No annotation', 'Annotation in both anchors','CRE to gene annotation'])
+        sns.move_legend(g, 'lower right')
         plt.savefig(f'{RES_PATH}/fig/{str(date.today())}/{tis}_hicQ05_anno_ecdfplot.{fmt}', format=fmt, dpi=400)
+        plt.close()
+    ### end_fig
+
+    ### fig: edcf of hic interactions with annotations
+    map_dict = {0:'No annotation', 1:'Annotation in both anchors'}
+    hic_cdf = hic_pairs_anno.assign(int_2_anno=lambda x: np.where((x.re_count == 0) & (x.cg_count == 0) & (x.rg_count == 0) & (x.ce_count == 0), 0, 1))
+    hic_cdf["Anchor Type"] = hic_cdf["int_2_anno"].map(map_dict)
+    with sns.plotting_context("paper", rc=rc):
+        g = sns.displot(x='q', hue='Anchor Type', data=hic_cdf, kind='ecdf', palette='Reds', hue_order=['No annotation', 'Annotation in both anchors'])
+        g.set(title=f'{tis_names[tis]}')
+        sns.move_legend(g, 'lower right')
+        plt.savefig(f'{RES_PATH}/fig/{str(date.today())}/{tis}_hicQ05_twocat_anno_ecdfplot.{fmt}', format=fmt, dpi=400)
         plt.close()
     ### end_fig
 
