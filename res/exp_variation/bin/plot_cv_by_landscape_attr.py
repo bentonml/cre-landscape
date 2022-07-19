@@ -171,7 +171,23 @@ for landscape_def in ['loop', 'contact']:
         f, ax = plt.subplots(figsize=(9, 9))
         cmap = sns.diverging_palette(240, 10, as_cmap=True)
         g = sns.heatmap(df_corr, cmap=cmap, vmax=1, center=0, vmin=-1,
-                        square=True, linewidths=.5, cbar_kws={"shrink": .5}, annot=True)
+                        square=True, linewidths=.5, cbar_kws={'shrink': .5, 'label':'Spearman'}, annot=True)
+        g.set_xticklabels(g.get_xticklabels(), rotation = 30, horizontalalignment='right')
+        g.set_yticklabels(tis_names)
+        g.set_ylabel('')
+        plt.tight_layout()
+        plt.savefig(f'{RES_PATH}/{landscape_def}_expVar_heatmap_tisspec-incl_alltis_spearman.{fmt}', format=fmt, dpi=400)
+        plt.close()
+
+    # combine all tissues, no tissue-specificity of gene
+    df_corr = pd.concat(dfs).set_index('Tissue').drop(columns=['Expression variation', 'Tissue-specificity (gene)'])
+
+    # plot spearman heatmap of all tissues, no tissue-specificity of gene
+    with sns.plotting_context("paper", rc=rc):
+        f, ax = plt.subplots(figsize=(9, 9))
+        cmap = sns.diverging_palette(240, 10, as_cmap=True)
+        g = sns.heatmap(df_corr, cmap=cmap, vmax=1, center=0, vmin=-1,
+                square=True, linewidths=.5, cbar_kws={'shrink': .5, 'label':'Spearman'}, annot=True)
         g.set_xticklabels(g.get_xticklabels(), rotation = 30, horizontalalignment='right')
         g.set_yticklabels(tis_names)
         g.set_ylabel('')

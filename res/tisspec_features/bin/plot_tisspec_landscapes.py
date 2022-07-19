@@ -121,7 +121,7 @@ for cretype in ['', 'gt0_']:
             g.set_xticklabels(tis_names, rotation=30, horizontalalignment='right')
             g.set_ylabel('Fraction tissue-specific CREs')
             g.set_xlabel('')
-            g.legend(handles=g.legend_.legendHandles[0:2], frameon=False, bbox_to_anchor=(1, 1.15))
+            g.legend(handles=g.legend_.legendHandles[0:2], frameon=False, bbox_to_anchor=(1, 1.15), labels=['Broad Expression', 'Tissue-specific Expression'])
             sns.despine()
             plt.tight_layout()
             plt.savefig(f'{RES_PATH}/all_{landscape_def}_{cretype}frac-tisspec-enhXtisspec_bytissue_boxplot.{fmt}', format=fmt, dpi=400)
