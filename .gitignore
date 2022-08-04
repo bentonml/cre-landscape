@@ -1,8 +1,14 @@
 dat/*
 
 res/*/fig/*
-res/*/dat/*
 res/*/res/*
+
+tisspec_features/dat
+seq_conservation/dat
+link_cre_to_genes/dat/2022-01*
+link_cre_to_genes/dat/2022-03*
+exp_variation/dat
+eqtl_enrichment/dat
 
 res/*/stats_by_tissue*.txt
 res/*/*.txt
