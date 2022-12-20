@@ -344,7 +344,7 @@ gene_spec = (pd.read_table(f'{DATA_PATH}/gene-specificity_GTEx_TPM_Schmitt16tiss
 phastcons = BedTool(f'{GEN_DATA_PATH}/phastcons/phastConsElements46way_All_merged.bed')
 
 # read enhancer entropy values from file
-enhs_filter_entropy = pd.read_table(f'{DATA_PATH}/2020-07-17_enhs_filter_entropy_220bp_noE065.tsv')
+enhs_filter_entropy = pd.read_table(f'{DATA_PATH}/chromhmm/2022-12-20_chromhmm_entropy_220bp.tsv')
 enhs_filter_entropy = (BedTool.from_dataframe(enhs_filter_entropy)
                               .intersect(blacklist, v=True)
                               .intersect(phastcons, wao=True)
@@ -353,11 +353,10 @@ enhs_filter_entropy = (BedTool.from_dataframe(enhs_filter_entropy)
                               .groupby(['chrom', 'start', 'end', 'tis_code', 'tis_name', 'elength', 'entropy'], as_index=False)
                               .sum())
 
-# filter enhancers to remove ones in the top 5% (> ~1.3kb)
-upper = enhs_filter_entropy.elength.quantile(q=.95)
+# filter enhancers to remove ones in the top 1% (> ~5kb)
+upper = enhs_filter_entropy.elength.quantile(q=.99)
 len_fltr_enh = enhs_filter_entropy.query(f'elength < {upper}')
 ### \\
-
 
 for tis in ['ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen', 'small_intestine', 'pancreas', 'liver', 'brain_prefrontal_cortex', 'brain_hippocampus']:
     logging.info(f'Running {tis}')
@@ -484,7 +483,7 @@ for tis in ['ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen', '
         axs[2].set_xlabel('Length (kb)')
         sns.despine()
         plt.tight_layout()
-        plt.savefig(f'{FIG_PATH}/{tis}_peakachuloop_anno-per-loop_distplot.{fmt}', format=fmt, dpi=400)
+        plt.savefig(f'{FIG_PATH}/{tis}_peakachuloop_anno-per-loop_distplot_chromhmm.{fmt}', format=fmt, dpi=400)
         plt.close()
     ### end_fig
 
@@ -514,10 +513,10 @@ for tis in ['ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen', '
     logging.info(f'Saving enh_num_by_gene dataframe for {tis}')
     # save dataframe of number of enhancers linked to each gene, only those in loops (possible to link)
     enh_num_by_gene = create_enh_num_by_gene_df(enh_to_gene, gene_anno[gene_anno.name.isin(genes_in_loops)]).drop_duplicates()
-    to_csv_new_subdir(enh_num_by_gene, f'{RES_PATH}/dat/{str(date.today())}', f'{tis}_gene_with_enh-count_frac-enh-spec_peakachuloop-linked.tsv')
+    to_csv_new_subdir(enh_num_by_gene, f'{RES_PATH}/dat/{str(date.today())}', f'{tis}_gene_with_chromhmm-enh-count_frac-enh-spec_peakachuloop-linked.tsv')
 
     logging.info(f'Saving enh_num_by_gene dataframe for {tis}')
     # save dataframe of enhancer to gene links
     enh_to_gene = enh_to_gene.rename(columns={tis:'gtex_tpm'}).assign(tissue=tis).drop_duplicates()
-    to_csv_new_subdir(enh_to_gene, f'{RES_PATH}/dat/{str(date.today())}', f'{tis}_enh_to_gene_peakachuloop-linked.tsv')
+    to_csv_new_subdir(enh_to_gene, f'{RES_PATH}/dat/{str(date.today())}', f'{tis}_chromhmm-enh_to_gene_peakachuloop-linked.tsv')
     ### \\
