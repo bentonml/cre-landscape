@@ -51,7 +51,7 @@ fmt='pdf'
 rc = {'font.size':14, 'axes.titlesize':16,'axes.labelsize':14, 'legend.fontsize': 14,
       'xtick.labelsize': 14, 'ytick.labelsize': 14}
 
-def read_data(landscape_def, chmm):
+def read_data(landscape_def, EXP_DATA_PATH, chmm):
     df_lst = []
     for tis in tis_order:
         if chmm:
@@ -82,7 +82,7 @@ def read_data(landscape_def, chmm):
                                               labels=tisspec_bins)
     return all_tis
 
-def read_matched_data(tis, landscape_type, dtype, chmm):
+def read_matched_data(tis, landscape_type, dtype, chmm, MAT_DAT_PATH=MAT_DAT_PATH):
     if chmm:
         return pd.read_table(f'{MAT_DAT_PATH}/matched_{dtype}{tis}_{landscape_type}_chromhmm.tsv', sep='\t')
     return pd.read_table(f'{MAT_DAT_PATH}/matched_{dtype}{tis}_{landscape_type}.tsv', sep='\t')
@@ -91,7 +91,7 @@ def read_matched_data(tis, landscape_type, dtype, chmm):
 for cretype in ['', 'gt0_']:
     for landscape_def in ['loop', 'contact']:
         # create dataframe of enhancer number by gene with all tissues
-        all_tis = read_data(landscape_def, chromhmm)
+        all_tis = read_data(landscape_def, EXP_DAT_PATH, chromhmm)
         all_tis_exp = all_tis[all_tis['exp']==1]
 
         ### // full matched sets \\ ###
