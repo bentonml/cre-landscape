@@ -162,7 +162,7 @@ for landscape_def in ['loop', 'contact']:
 
 for landscape_def in ['loop', 'contact']:
     # create dataframe of enhancer number by gene with all tissues
-    all_tis = read_data(landscape_def)
+    all_tis = read_data(landscape_def, chmm=CHROMHMM)
 
     if CHROMHMM:
         landscape_label = f'chromhmm_{landscape_def}'
