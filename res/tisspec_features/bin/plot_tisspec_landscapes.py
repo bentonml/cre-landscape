@@ -19,7 +19,7 @@ import statsmodels.api as sm
 
 plt.switch_backend('agg')  # add to save plots non-interactively
 
-chromhmm = TRUE
+chromhmm = True
 if chromhmm:
     EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-12-20'
     MAT_DAT_PATH = f'../dat/2023-01-09'
