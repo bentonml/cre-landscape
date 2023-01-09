@@ -50,7 +50,7 @@ fmt='pdf'
 rc = {'font.size':14, 'axes.titlesize':16,'axes.labelsize':14, 'legend.fontsize': 14,
       'xtick.labelsize': 14, 'ytick.labelsize': 14}
 
-def read_data(landscape_def, EXP_DATA_PATH, chmm):
+def read_data(landscape_def, chmm):
     df_lst = []
     for tis in tis_order:
         if chmm:
@@ -94,9 +94,9 @@ for landscape_def in ['loop', 'contact']:
         landscape_label = f'chromhmm_{landscape_def}'
     else:
         landscape_label = landscape_def
-
+    
     # create dataframe of enhancer number by gene with all tissues
-    all_tis = read_data(landscape_def, EXP_DAT_PATH, CHROMHMM)
+    all_tis = read_data(landscape_def, CHROMHMM)
     all_tis_exp = all_tis[all_tis['exp']==1]
 
     ### // full hk and lof sets \\ ###
