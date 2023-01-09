@@ -11,8 +11,14 @@ library(readr)
 suppressMessages(library(dplyr))
 
 # constants and paths
-INDATE  <- '2022-05-20'
-RESDATE <- '2022-05-20'
+chromhmm = TRUE
+if (chromhmm) {
+  INDATE  <- '2023-01-09'  # chromhmm
+  RESDATE <- '2023-01-09'
+} else {
+  INDATE  <- '2022-05-20'  # histone mod
+  RESDATE <- '2022-05-20'
+}
 
 DORS <- '/dors/capra_lab/users/bentonml/cre_landscape'
 DATA <- paste(DORS, '/res/match_landscapes/dat/', INDATE, sep='')
@@ -40,44 +46,51 @@ return_match_statistics <- function(mdat, tis, dtype, ltype) {
 for (landscape in landscapes) {
     for (tis in tissues) {
       # housekeeping v. expressed genes
-      infile <- paste(DATA, '/hk_', tis, '_', landscape, '.tsv', sep='')
+      if (chromhmm) {infile <- paste(DATA, '/hk_', tis, '_', landscape, '_chromhmm.tsv', sep='')}
+        else {infile <- paste(DATA, '/hk_', tis, '_', landscape, '.tsv', sep='')}
       hk <- read.csv(infile, sep='\t')
       hk$anno <- factor(hk$anno, levels=c("exp_nocat", "hk"), labels=c('Expressed', 'Housekeeping'))
       matched <- matchit(anno ~ gtex_exp_log2, data=hk, estimand="ATT", replace=FALSE, ratio=2, caliper=0.1)
 
       return_match_statistics(matched, tis=tis, dtype='hk', ltype=landscape)
       mdata <- match.data(matched, data=hk, distance="prop.score")
-      write_tsv(mdata, paste(RESDATA, '/matched_hk_', tis, '_', landscape, '.tsv', sep=''))
+      if (chromhmm){write_tsv(mdata, paste(RESDATA, '/matched_hk_', tis, '_', landscape, '_chromhmm.tsv', sep=''))}
+        else {write_tsv(mdata, paste(RESDATA, '/matched_hk_', tis, '_', landscape, '.tsv', sep=''))}
 
       # lof intolerant v. expressed genes
-      infile <- paste(DATA, '/lof_', tis, '_', landscape, '.tsv', sep='')
+      if (chromhmm) {infile <- paste(DATA, '/lof_', tis, '_', landscape, '_chromhmm.tsv', sep='')}
+        else {infile <- paste(DATA, '/lof_', tis, '_', landscape, '.tsv', sep='')}
       lo <- read.csv(infile, sep='\t')
       lo$anno <- factor(lo$anno, levels=c("exp_nocat", "lof_intol"), labels=c('Expressed', 'LoF Intolerant'))
       matched <- matchit(anno ~ gtex_exp_log2, data=lo, estimand="ATT", replace=FALSE, ratio=2, caliper=0.1)
 
       return_match_statistics(matched, tis=tis, dtype='lof', ltype=landscape)
       mdata <- match.data(matched, data=lo, distance="prop.score")
-      write_tsv(mdata, paste(RESDATA, '/matched_lof_', tis, '_', landscape, '.tsv', sep=''))
-      
+      if (chromhmm) {write_tsv(mdata, paste(RESDATA, '/matched_lof_', tis, '_', landscape, '_chromhmm.tsv', sep=''))}
+        else {write_tsv(mdata, paste(RESDATA, '/matched_lof_', tis, '_', landscape, '.tsv', sep=''))}
+
       # housekeeping v. expressed genes, CRE > 0
-      infile <- paste(DATA, '/hk_gt0_', tis, '_', landscape, '.tsv', sep='')
+      if (chromhmm) {infile <- paste(DATA, '/hk_gt0_', tis, '_', landscape, '_chromhmm.tsv', sep='')}
+        else {infile <- paste(DATA, '/hk_gt0_', tis, '_', landscape, '.tsv', sep='')}
       hk <- read.csv(infile, sep='\t')
       hk$anno <- factor(hk$anno, levels=c("exp_nocat", "hk"), labels=c('Expressed', 'Housekeeping'))
       matched <- matchit(anno ~ gtex_exp_log2, data=hk, estimand="ATT", replace=FALSE, ratio=2, caliper=0.1)
 
       return_match_statistics(matched, tis=tis, dtype='hk_gt0', ltype=landscape)
       mdata <- match.data(matched, data=hk, distance="prop.score")
-      write_tsv(mdata, paste(RESDATA, '/matched_hk_gt0_', tis, '_', landscape, '.tsv', sep=''))
+      if (chromhmm) {write_tsv(mdata, paste(RESDATA, '/matched_hk_gt0_', tis, '_', landscape, '_chromhmm.tsv', sep=''))}
+        else {write_tsv(mdata, paste(RESDATA, '/matched_hk_gt0_', tis, '_', landscape, '.tsv', sep=''))}
 
       # lof intolerant v. expressed genes
-      infile <- paste(DATA, '/lof_gt0_', tis, '_', landscape, '.tsv', sep='')
+      if (chromhmm) {infile <- paste(DATA, '/lof_gt0_', tis, '_', landscape, '_chromhmm.tsv', sep='')}
+        else {infile <- paste(DATA, '/lof_gt0_', tis, '_', landscape, '.tsv', sep='')}
       lo <- read.csv(infile, sep='\t')
       lo$anno <- factor(lo$anno, levels=c("exp_nocat", "lof_intol"), labels=c('Expressed', 'LoF Intolerant'))
       matched <- matchit(anno ~ gtex_exp_log2, data=lo, estimand="ATT", replace=FALSE, ratio=2, caliper=0.1)
 
       return_match_statistics(matched, tis=tis, dtype='lof_gt0', ltype=landscape)
       mdata <- match.data(matched, data=lo, distance="prop.score")
-      write_tsv(mdata, paste(RESDATA, '/matched_lof_gt0_', tis, '_', landscape, '.tsv', sep=''))
+      if (chromhmm) {write_tsv(mdata, paste(RESDATA, '/matched_lof_gt0_', tis, '_', landscape, '_chromhmm.tsv', sep=''))}
+        else {write_tsv(mdata, paste(RESDATA, '/matched_lof_gt0_', tis, '_', landscape, '.tsv', sep=''))}
     }
 }
-

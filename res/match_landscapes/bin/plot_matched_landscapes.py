@@ -20,8 +20,14 @@ import statsmodels.api as sm
 plt.switch_backend('agg')  # add to save plots non-interactively
 
 ### // constants and paths \\ ###
-EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-05-10'
-MAT_DAT_PATH = f'../dat/2022-05-20'
+CHROMHMM = True
+if CHROMHMM:
+    EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-12-20'
+    MAT_DAT_PATH = f'../dat/2023-01-09'
+else:
+    EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-05-10'
+    MAT_DAT_PATH = f'../dat/2022-05-20'
+
 RES_PATH = f'../fig/{str(date.today())}'
 
 # create a date stamped dir for files
@@ -44,13 +50,24 @@ fmt='pdf'
 rc = {'font.size':14, 'axes.titlesize':16,'axes.labelsize':14, 'legend.fontsize': 14,
       'xtick.labelsize': 14, 'ytick.labelsize': 14}
 
-def read_data(landscape_def):
+if CHROMHMM:
+    landscape_label = f'chromhmm_{landscape_def}'
+else:
+    landscape_label = landscape_def
+
+def read_data(landscape_def, chmm):
     df_lst = []
     for tis in tis_order:
-        if landscape_def == 'contact':
-            infile = f'{EXP_DAT_PATH}/{tis}_gene_with_enh-count_frac-enh-spec_hicQ05-linked.tsv'
-        elif landscape_def == 'loop':
-            infile = f'{EXP_DAT_PATH}/{tis}_gene_with_enh-count_frac-enh-spec_peakachuloop-linked.tsv'
+        if chmm:
+            if landscape_def == 'contact':
+                infile = f'{EXP_DATA_PATH}/{tis}_gene_with_chromhmm-enh-count_frac-enh-spec_hicQ05-linked.tsv'
+            elif landscape_def == 'loop':
+                infile = f'{EXP_DATA_PATH}/{tis}_gene_with_chromhmm-enh-count_frac-enh-spec_peakachuloop-linked.tsv'
+        else:
+            if landscape_def == 'contact':
+                infile = f'{EXP_DATA_PATH}/{tis}_gene_with_enh-count_frac-enh-spec_hicQ05-linked.tsv'
+            elif landscape_def == 'loop':
+                infile = f'{EXP_DATA_PATH}/{tis}_gene_with_enh-count_frac-enh-spec_peakachuloop-linked.tsv'
         enh_num_by_gene = pd.read_table(infile)
         enh_num_by_gene = enh_num_by_gene.assign(rel_entropy_bins=lambda x: pd.cut(x['rel_entropy'], bins=10))
         enh_num_by_gene = enh_num_by_gene.assign(enh_rel_entropy_bins=lambda x: pd.cut(x['enh_rel_entropy'], bins=5))
@@ -69,19 +86,22 @@ def read_data(landscape_def):
                                               labels=tisspec_bins)
     return all_tis
 
-def read_matched_data(tis, landscape_type, gene_type):
+def read_matched_data(tis, landscape_type, gene_type, chmm):
+    if chmm:
+        return pd.read_table(f'{MAT_DAT_PATH}/matched_{gene_type}_{tis}_{landscape_type}_chromhmm.tsv', sep='\t')
     return pd.read_table(f'{MAT_DAT_PATH}/matched_{gene_type}_{tis}_{landscape_type}.tsv', sep='\t')
 ### \\
 
 for landscape_def in ['loop', 'contact']:
     print(landscape_def)
     # create dataframe of enhancer number by gene with all tissues
-    all_tis = read_data(landscape_def)
+    all_tis = read_data(landscape_def, CHROMHMM)
     all_tis_exp = all_tis[all_tis['exp']==1]
+
 
     ### // full hk and lof sets \\ ###
     for tis in tis_order:
-        df = read_matched_data(tis=tis, gene_type='hk', landscape_type=landscape_def)
+        df = read_matched_data(tis=tis, gene_type='hk', landscape_type=landscape_def, chmm=CHROMHMM)
         merged = df.merge(all_tis_exp.query(f'tissue=="{tis}"'), how='left')
 
         with sns.plotting_context("paper", rc=rc):
@@ -96,7 +116,7 @@ for landscape_def in ['loop', 'contact']:
             g.set_xlabels('')
             g.set_ylabels('Number of CREs')
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXenh-num_hk_matched_boxplot_fliers.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXenh-num_hk_matched_boxplot_fliers.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -108,7 +128,7 @@ for landscape_def in ['loop', 'contact']:
             g.set_ylabels('Number of CREs')
             plt.legend(loc='upper left', frameon=False, labels=['Housekeeping', 'Expressed'])
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXenh-num_hk_matched_ecdf.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXenh-num_hk_matched_ecdf.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -127,7 +147,7 @@ for landscape_def in ['loop', 'contact']:
             g.set_xticklabels(['HK', 'Expressed'])
             g.set_ylabels('Number of CREs')
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXenh-num_hk_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXenh-num_hk_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -142,7 +162,7 @@ for landscape_def in ['loop', 'contact']:
             g.set_xlabels('')
             g.set_ylabels('% PhastCons')
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXphastcons_hk_matched_boxplot_fliers.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXphastcons_hk_matched_boxplot_fliers.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -161,16 +181,12 @@ for landscape_def in ['loop', 'contact']:
             g.set_xticklabels(['HK', 'Expressed'])
             g.set_ylabels('% PhastCons')
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXphastcons_hk_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXphastcons_hk_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
-        # # print MWU stats
-        # _, cre_p = stats.mannwhitneyu(merged.query(f'anno=="Housekeeping"').enh_num, merged.query(f'anno=="Expressed"').enh_num)
-        # _, phast_p = stats.mannwhitneyu(merged.query(f'anno=="Housekeeping"').frac_phastcons, merged.query(f'anno=="Expressed"').frac_phastcons)
-        # print(f'{tis}\tHousekeeping\t{cre_p}\t{phast_p}')
 
-        df = read_matched_data(tis=tis, gene_type='lof', landscape_type=landscape_def)
+        df = read_matched_data(tis=tis, gene_type='lof', landscape_type=landscape_def, chmm=CHROMHMM)
         merged = df.merge(all_tis_exp.query(f'tissue=="{tis}"'), how='left')
 
         with sns.plotting_context("paper", rc=rc):
@@ -185,7 +201,7 @@ for landscape_def in ['loop', 'contact']:
             g.set_xlabels('')
             g.set_ylabels('Number of CREs')
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXenh-num_lof_matched_boxplot_fliers.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXenh-num_lof_matched_boxplot_fliers.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -197,7 +213,7 @@ for landscape_def in ['loop', 'contact']:
             g.set_ylabels('Number of CREs')
             plt.legend(loc='upper left', frameon=False, labels=['Expressed', 'LoF Intolerant'])
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXenh-num_lof_matched_ecdf.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXenh-num_lof_matched_ecdf.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -212,7 +228,7 @@ for landscape_def in ['loop', 'contact']:
             g.set_xlabels('')
             g.set_ylabels('Number of CREs')
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXenh-num_lof_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXenh-num_lof_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -228,7 +244,7 @@ for landscape_def in ['loop', 'contact']:
             g.set_xlabels('')
             g.set_ylabels('Number of CREs')
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXenh-num_lof_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXenh-num_lof_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -243,7 +259,7 @@ for landscape_def in ['loop', 'contact']:
             g.set_xlabels('')
             g.set_ylabels('% PhastCons')
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXphastcons_lof_matched_boxplot_fliers.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXphastcons_lof_matched_boxplot_fliers.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -261,20 +277,15 @@ for landscape_def in ['loop', 'contact']:
             g.set_xlabels('')
             g.set_ylabels('% PhastCons')
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXphastcons_lof_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXphastcons_lof_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
-
-        # # print MWU stats
-        # _, cre_p = stats.mannwhitneyu(merged.query(f'anno=="LoF Intolerant"').enh_num, merged.query(f'anno=="Expressed"').enh_num)
-        # _, phast_p = stats.mannwhitneyu(merged.query(f'anno=="LoF Intolerant"').frac_phastcons, merged.query(f'anno=="Expressed"').frac_phastcons)
-        # print(f'{tis}\tLoF Intolerant\t{cre_p}\t{phast_p}')
     ### \\
 
 
     ### // CRE > 0 hk and lof sets \\ ###
     for tis in tis_order:
-        df = read_matched_data(tis=tis, gene_type='hk_gt0', landscape_type=landscape_def)
+        df = read_matched_data(tis=tis, gene_type='hk_gt0', landscape_type=landscape_def, chmm=CHROMHMM)
         merged = df.merge(all_tis_exp.query(f'tissue=="{tis}"'), how='left')
 
         with sns.plotting_context("paper", rc=rc):
@@ -289,7 +300,7 @@ for landscape_def in ['loop', 'contact']:
             g.set_xlabels('')
             g.set_ylabels('Number of CREs')
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXenh-num_hk_gt0_matched_boxplot_fliers.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXenh-num_hk_gt0_matched_boxplot_fliers.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -308,7 +319,7 @@ for landscape_def in ['loop', 'contact']:
             g.set_xticklabels(['HK', 'Expressed'])
             g.set_ylabels('Number of CREs')
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXenh-num_hk_gt0_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXenh-num_hk_gt0_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -320,7 +331,7 @@ for landscape_def in ['loop', 'contact']:
             g.set_ylabels('Number of CREs')
             plt.legend(loc='upper left', frameon=False, labels=['Housekeeping', 'Expressed'])
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXenh-num_hk_gt0_matched_ecdf.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXenh-num_hk_gt0_matched_ecdf.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -339,7 +350,7 @@ for landscape_def in ['loop', 'contact']:
             g.set_xticklabels(['HK', 'Expressed'])
             g.set_ylabels('% PhastCons')
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXphastcons_hk_gt0_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXphastcons_hk_gt0_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -355,7 +366,7 @@ for landscape_def in ['loop', 'contact']:
             g.set_ylabel('Fraction tissue-specific CRES')
             sns.despine()
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXfrac-tispec-cre_hk_gt0_matched_violinplot.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXfrac-tispec-cre_hk_gt0_matched_violinplot.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -367,11 +378,11 @@ for landscape_def in ['loop', 'contact']:
             g.set_ylabels('Fraction of tissue-specifc CREs')
             plt.legend(loc='upper left', frameon=False, labels=['Expressed', 'Housekeeping'])
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXfrac-tispec-cre_hk_gt0_matched_ecdf.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXfrac-tispec-cre_hk_gt0_matched_ecdf.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
-        df = read_matched_data(tis=tis, gene_type='lof_gt0', landscape_type=landscape_def)
+        df = read_matched_data(tis=tis, gene_type='lof_gt0', landscape_type=landscape_def, chmm=CHROMHMM)
         merged = df.merge(all_tis_exp.query(f'tissue=="{tis}"'), how='left')
 
         with sns.plotting_context("paper", rc=rc):
@@ -387,7 +398,7 @@ for landscape_def in ['loop', 'contact']:
             g.set_xlabels('')
             g.set_ylabels('Number of CREs')
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXenh-num_lof_gt0_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXenh-num_lof_gt0_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -399,7 +410,7 @@ for landscape_def in ['loop', 'contact']:
             g.set_ylabels('Number of CREs')
             plt.legend(loc='upper left', frameon=False, labels=['Expressed', 'LoF Intolerant'])
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXenh-num_lof_gt0_matched_ecdf.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXenh-num_lof_gt0_matched_ecdf.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -414,7 +425,7 @@ for landscape_def in ['loop', 'contact']:
             g.set_xlabels('')
             g.set_ylabels('% PhastCons')
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXphastcons_lof_gt0_matched_boxplot_fliers.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXphastcons_lof_gt0_matched_boxplot_fliers.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -432,7 +443,7 @@ for landscape_def in ['loop', 'contact']:
             g.set_xlabels('')
             g.set_ylabels('% PhastCons')
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXphastcons_lof_gt0_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXphastcons_lof_gt0_matched_boxplot_nofliers.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -448,7 +459,7 @@ for landscape_def in ['loop', 'contact']:
             g.set_ylabel('Fraction tissue-specific CRES')
             sns.despine()
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXfrac-tispec-cre_lof_gt0_matched_violinplot.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXfrac-tispec-cre_lof_gt0_matched_violinplot.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -460,7 +471,7 @@ for landscape_def in ['loop', 'contact']:
             g.set_ylabels('Fraction of tissue-specifc CREs')
             plt.legend(loc='upper left', frameon=False, labels=['Expressed', 'LoF Intolerant'])
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_categoryXfrac-tispec-cre_lof_gt0_matched_ecdf.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_categoryXfrac-tispec-cre_lof_gt0_matched_ecdf.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
     ### \\
@@ -472,7 +483,7 @@ for landscape_def in ['loop', 'contact']:
     print('')
     print(f'tisue\tmed_cre_num_expressed\tmed_cre_num_housekeeping\tmed_frac_phastcons_expressed\tmed_frac_phastcons_housekeeping')
     for tis in tis_order:
-        df = read_matched_data(tis=tis, gene_type='hk', landscape_type=landscape_def)
+        df = read_matched_data(tis=tis, gene_type='hk', landscape_type=landscape_def, chmm=CHROMHMM)
         merged = df.merge(all_tis_exp.query(f'tissue=="{tis}"'), how='left')
 
         # print medians
@@ -489,7 +500,7 @@ for landscape_def in ['loop', 'contact']:
     print('')
     print(f'tisue\tmed_cre_num_expressed\tmed_cre_num_lof\tmed_frac_phastcons_expressed\tmed_frac_phastcons_lif')
     for tis in tis_order:
-        df = read_matched_data(tis=tis, gene_type='lof', landscape_type=landscape_def)
+        df = read_matched_data(tis=tis, gene_type='lof', landscape_type=landscape_def, chmm=CHROMHMM)
         merged = df.merge(all_tis_exp.query(f'tissue=="{tis}"'), how='left')
 
         # print medians
@@ -507,13 +518,13 @@ for landscape_def in ['loop', 'contact']:
     hdf = hdf.assign(cre_num_fdr=lambda x: sm.stats.multipletests(x.cre_num_p, alpha=0.05, method='fdr_bh')[1],
                      phastcons_fdr=lambda x: sm.stats.multipletests(x.phastcons_p, alpha=0.05, method='fdr_bh')[1],
                      frac_tisspec_fdr=lambda x: sm.stats.multipletests(x.frac_tisspec_p, alpha=0.05, method='fdr_bh')[1])
-    hdf.to_csv(f'../res/housekeeping_{landscape_def}_df.out', sep='\t', index=False, header=True)
+    hdf.to_csv(f'../res/housekeeping_{landscape_label}_df.out', sep='\t', index=False, header=True)
 
     ldf = pd.DataFrame(lrows, columns=['tissue', 'genetype', 'cre_num_p', 'phastcons_p', 'frac_tisspec_p'])
     ldf = ldf.assign(cre_num_fdr=lambda x: sm.stats.multipletests(x.cre_num_p, alpha=0.05, method='fdr_bh')[1],
                      phastcons_fdr=lambda x: sm.stats.multipletests(x.phastcons_p, alpha=0.05, method='fdr_bh')[1],
                      frac_tisspec_fdr=lambda x: sm.stats.multipletests(x.frac_tisspec_p, alpha=0.05, method='fdr_bh')[1])
-    ldf.to_csv(f'../res/lof-intol_{landscape_def}_df.out', sep='\t', index=False, header=True)
+    ldf.to_csv(f'../res/lof-intol_{landscape_label}_df.out', sep='\t', index=False, header=True)
     ### \\
 
     ### // write p value table, CRE > 0 \\ ###
@@ -523,7 +534,7 @@ for landscape_def in ['loop', 'contact']:
     print('')
     print(f'tisue\tmed_cre_num_expressed\tmed_cre_num_housekeeping\tmed_frac_phastcons_expressed\tmed_frac_phastcons_housekeeping')
     for tis in tis_order:
-        df = read_matched_data(tis=tis, gene_type='hk_gt0', landscape_type=landscape_def)
+        df = read_matched_data(tis=tis, gene_type='hk_gt0', landscape_type=landscape_def, chmm=CHROMHMM)
         merged = df.merge(all_tis_exp.query(f'tissue=="{tis}"'), how='left')
 
         # print medians
@@ -540,7 +551,7 @@ for landscape_def in ['loop', 'contact']:
     print('')
     print(f'tisue\tmed_cre_num_expressed\tmed_cre_num_lof\tmed_frac_phastcons_expressed\tmed_frac_phastcons_lif')
     for tis in tis_order:
-        df = read_matched_data(tis=tis, gene_type='lof_gt0', landscape_type=landscape_def)
+        df = read_matched_data(tis=tis, gene_type='lof_gt0', landscape_type=landscape_def, chmm=CHROMHMM)
         merged = df.merge(all_tis_exp.query(f'tissue=="{tis}"'), how='left')
 
         # print medians
@@ -558,11 +569,11 @@ for landscape_def in ['loop', 'contact']:
     hdf = hdf.assign(cre_num_fdr=lambda x: sm.stats.multipletests(x.cre_num_p, alpha=0.05, method='fdr_bh')[1],
                      phastcons_fdr=lambda x: sm.stats.multipletests(x.phastcons_p, alpha=0.05, method='fdr_bh')[1],
                      frac_tisspec_fdr=lambda x: sm.stats.multipletests(x.frac_tisspec_p, alpha=0.05, method='fdr_bh')[1])
-    hdf.to_csv(f'../res/housekeeping_{landscape_def}_gt0_df.out', sep='\t', index=False, header=True)
+    hdf.to_csv(f'../res/housekeeping_{landscape_label}_gt0_df.out', sep='\t', index=False, header=True)
 
     ldf = pd.DataFrame(lrows, columns=['tissue', 'genetype', 'cre_num_p', 'phastcons_p', 'frac_tisspec_p'])
     ldf = ldf.assign(cre_num_fdr=lambda x: sm.stats.multipletests(x.cre_num_p, alpha=0.05, method='fdr_bh')[1],
                      phastcons_fdr=lambda x: sm.stats.multipletests(x.phastcons_p, alpha=0.05, method='fdr_bh')[1],
                      frac_tisspec_fdr=lambda x: sm.stats.multipletests(x.frac_tisspec_p, alpha=0.05, method='fdr_bh')[1])
-    ldf.to_csv(f'../res/lof-intol_{landscape_def}_gt0_df.out', sep='\t', index=False, header=True)
+    ldf.to_csv(f'../res/lof-intol_{landscape_label}_gt0_df.out', sep='\t', index=False, header=True)
     ### \\

@@ -13,7 +13,12 @@ import numpy  as np
 from datetime import date
 
 ### // constants and paths \\ ###
-EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-05-10'
+CHROMHMM = True
+if CHROMHMM:
+    EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-01-20'
+else:
+    EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-05-10'
+
 OUT_DAT_PATH = f'../dat/{str(date.today())}'
 
 # create a date stamped dir for files
@@ -26,13 +31,19 @@ tisspec_thresh = 0.3
 tis_order = ['ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen',
              'small_intestine', 'pancreas', 'liver', 'brain_prefrontal_cortex', 'brain_hippocampus']
 
-def read_data(landscape_def):
+def read_data(landscape_def, chmm):
     df_lst = []
     for tis in tis_order:
-        if landscape_def == 'contact':
-            infile = f'{EXP_DAT_PATH}/{tis}_gene_with_enh-count_frac-enh-spec_hicQ05-linked.tsv'
-        elif landscape_def == 'loop':
-            infile = f'{EXP_DAT_PATH}/{tis}_gene_with_enh-count_frac-enh-spec_peakachuloop-linked.tsv'
+        if chmm:
+            if landscape_def == 'contact':
+                infile = f'{EXP_DATA_PATH}/{tis}_gene_with_chromhmm-enh-count_frac-enh-spec_hicQ05-linked.tsv'
+            elif landscape_def == 'loop':
+                infile = f'{EXP_DATA_PATH}/{tis}_gene_with_chromhmm-enh-count_frac-enh-spec_peakachuloop-linked.tsv'
+        else:
+            if landscape_def == 'contact':
+                infile = f'{EXP_DATA_PATH}/{tis}_gene_with_enh-count_frac-enh-spec_hicQ05-linked.tsv'
+            elif landscape_def == 'loop':
+                infile = f'{EXP_DATA_PATH}/{tis}_gene_with_enh-count_frac-enh-spec_peakachuloop-linked.tsv'
         enh_num_by_gene = pd.read_table(infile)
         enh_num_by_gene = enh_num_by_gene.assign(exp_nocat=lambda x: np.where((x.exp == 1) & (x.hk == 0) & (x.lof_intol == 0) & (x.essential == 0), 1, 0))
         enh_num_by_gene = enh_num_by_gene.assign(tis_spec=lambda x: np.where(x.rel_entropy > tisspec_thresh, 1, 0))
@@ -47,7 +58,7 @@ def read_data(landscape_def):
 
 for landscape in landscape_def:
     # read all data for landscape type
-    all_tis = read_data(landscape)
+    all_tis = read_data(landscape, CHROMHMM)
     all_tis_exp = all_tis[all_tis['exp']==1].copy(deep=True)
 
     # create expressed gene only dataframe
@@ -67,21 +78,32 @@ for landscape in landscape_def:
         hk = (enh_by_expgene_anno
                 .query(f'tissue=="{tis}" & (anno=="hk" | anno=="exp_nocat")')
                 .filter(['anno', 'gtex_exp_log2', 'target_gene', 'enh_num']))
-        hk.to_csv(f'{OUT_DAT_PATH}/hk_{tis}_{landscape}.tsv', sep='\t', index=False, header=True)
+        if CHROMHMM:
+            hk.to_csv(f'{OUT_DAT_PATH}/hk_{tis}_{landscape}_chromhmm.tsv', sep='\t', index=False, header=True)
+        else:
+            hk.to_csv(f'{OUT_DAT_PATH}/hk_{tis}_{landscape}.tsv', sep='\t', index=False, header=True)
 
         lo = (enh_by_expgene_anno
                 .query(f'tissue=="{tis}" & (anno=="lof_intol" | anno=="exp_nocat")')
                 .filter(['anno', 'gtex_exp_log2', 'target_gene', 'enh_num']))
-        lo.to_csv(f'{OUT_DAT_PATH}/lof_{tis}_{landscape}.tsv', sep='\t', index=False, header=True)
+        if CHROMHMM:
+            lo.to_csv(f'{OUT_DAT_PATH}/lof_{tis}_{landscape}_chromhmm.tsv', sep='\t', index=False, header=True)
+        else:
+            lo.to_csv(f'{OUT_DAT_PATH}/lof_{tis}_{landscape}.tsv', sep='\t', index=False, header=True)
 
         # calculate hk and lof dataframes for each tissue, CRE > 0
         hk = (enh_by_expgene_anno
                 .query(f'tissue=="{tis}" & enh_num>0 & (anno=="hk" | anno=="exp_nocat")')
                 .filter(['anno', 'gtex_exp_log2', 'target_gene', 'enh_num']))
-        hk.to_csv(f'{OUT_DAT_PATH}/hk_gt0_{tis}_{landscape}.tsv', sep='\t', index=False, header=True)
+        if CHROMHMM:
+            hk.to_csv(f'{OUT_DAT_PATH}/hk_gt0_{tis}_{landscape}_chromhmm.tsv', sep='\t', index=False, header=True)
+        else:
+            hk.to_csv(f'{OUT_DAT_PATH}/hk_gt0_{tis}_{landscape}.tsv', sep='\t', index=False, header=True)
 
         lo = (enh_by_expgene_anno
                 .query(f'tissue=="{tis}" & enh_num>0 & (anno=="lof_intol" | anno=="exp_nocat")')
                 .filter(['anno', 'gtex_exp_log2', 'target_gene', 'enh_num']))
-        lo.to_csv(f'{OUT_DAT_PATH}/lof_gt0_{tis}_{landscape}.tsv', sep='\t', index=False, header=True)
-
+        if CHROMHMM:
+            lo.to_csv(f'{OUT_DAT_PATH}/lof_gt0_{tis}_{landscape}_chromhmm.tsv', sep='\t', index=False, header=True)
+        else:
+            lo.to_csv(f'{OUT_DAT_PATH}/lof_gt0_{tis}_{landscape}.tsv', sep='\t', index=False, header=True)
