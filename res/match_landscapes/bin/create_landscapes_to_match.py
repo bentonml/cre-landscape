@@ -31,7 +31,7 @@ tisspec_thresh = 0.3
 tis_order = ['ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen',
              'small_intestine', 'pancreas', 'liver', 'brain_prefrontal_cortex', 'brain_hippocampus']
 
-def read_data(landscape_def, chmm):
+def read_data(landscape_def, EXP_DATA_PATH, chmm):
     df_lst = []
     for tis in tis_order:
         if chmm:
@@ -58,7 +58,7 @@ def read_data(landscape_def, chmm):
 
 for landscape in landscape_def:
     # read all data for landscape type
-    all_tis = read_data(landscape, CHROMHMM)
+    all_tis = read_data(landscape, EXP_DAT_PATH, CHROMHMM)
     all_tis_exp = all_tis[all_tis['exp']==1].copy(deep=True)
 
     # create expressed gene only dataframe
