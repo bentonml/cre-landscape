@@ -11,8 +11,14 @@ library(readr)
 suppressMessages(library(dplyr))
 
 # constants and paths
-INDATE  <- '2022-05-20'
-RESDATE <- '2022-05-20'
+chromhmm = TRUE
+if (chromhmm) {
+  INDATE  <- '2023-01-09'  # chromhmm
+  RESDATE <- '2023-01-09'
+} else {
+  INDATE  <- '2022-05-20'  # histone mod
+  RESDATE <- '2022-05-20'
+}
 
 DORS <- '/dors/capra_lab/users/bentonml/cre_landscape'
 DATA <- paste(DORS, '/res/tisspec_features/dat/', INDATE, sep='')
@@ -40,23 +46,27 @@ return_match_statistics <- function(mdat, tis, dtype, ltype) {
 for (landscape in landscapes) {
     for (tis in tissues) {
       # housekeeping v. expressed genes
-      infile <- paste(DATA, '/', tis, '_', landscape, '.tsv', sep='')
+      if (chromhmm){infile <- paste(DATA, '/', tis, '_', landscape, '_chromhmm.tsv', sep='')}
+        else {infile <- paste(DATA, '/', tis, '_', landscape, '.tsv', sep='')}
       ts <- read.csv(infile, sep='\t')
       ts$anno <- factor(ts$anno, levels=c("exp_broad", "tis_spec"), labels=c('Broad','Tissue-specific'))
       matched <- matchit(anno ~ gtex_exp_log2, data=ts, estimand="ATT", replace=FALSE, ratio=10, caliper=0.1)
 
       return_match_statistics(matched, tis=tis, ltype=landscape, dtype='')
       mdata <- match.data(matched, data=ts, distance="prop.score")
-      write_tsv(mdata, paste(RESDATA, '/matched_', tis, '_', landscape, '.tsv', sep=''))
+      if (chromhmm){write_tsv(mdata, paste(RESDATA, '/matched_', tis, '_', landscape, '_chromhmm.tsv', sep=''))}
+        else {write_tsv(mdata, paste(RESDATA, '/matched_', tis, '_', landscape, '.tsv', sep=''))}
 
       # housekeeping v. expressed genes, CRE > 0
-      infile <- paste(DATA, '/gt0_', tis, '_', landscape, '.tsv', sep='')
+      if (chromhmm) {infile <- paste(DATA, '/gt0_', tis, '_', landscape, '_chromhmm.tsv', sep='')}
+        else {infile <- paste(DATA, '/gt0_', tis, '_', landscape, '.tsv', sep='')}
       ts <- read.csv(infile, sep='\t')
       ts$anno <- factor(ts$anno, levels=c("exp_broad", "tis_spec"), labels=c('Broad','Tissue-specific'))
       matched <- matchit(anno ~ gtex_exp_log2, data=ts, estimand="ATT", replace=FALSE, ratio=10, caliper=0.1)
 
       return_match_statistics(matched, tis=tis, dtype='gt0_', ltype=landscape)
       mdata <- match.data(matched, data=ts, distance="prop.score")
-      write_tsv(mdata, paste(RESDATA, '/matched_gt0_', tis, '_', landscape, '.tsv', sep=''))
+      if (chromhmm) {write_tsv(mdata, paste(RESDATA, '/matched_gt0_', tis, '_', landscape, '_chromhmm.tsv', sep=''))}
+        else {write_tsv(mdata, paste(RESDATA, '/matched_gt0_', tis, '_', landscape, '.tsv', sep=''))}
     }
 }

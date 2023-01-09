@@ -19,8 +19,14 @@ import statsmodels.api as sm
 
 plt.switch_backend('agg')  # add to save plots non-interactively
 
-EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-05-10'
-MAT_DAT_PATH = f'../dat/2022-05-20'
+chromhmm = TRUE
+if chromhmm:
+    EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-12-20'
+    MAT_DAT_PATH = f'../dat/2023-01-09'
+else:
+    EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-05-10'
+    MAT_DAT_PATH = f'../dat/2022-05-20'
+
 RES_PATH = f'../fig/{str(date.today())}'
 
 # create a date stamped dir for files
@@ -45,13 +51,19 @@ fmt='pdf'
 rc = {'font.size':14, 'axes.titlesize':16,'axes.labelsize':14, 'legend.fontsize': 14,
       'xtick.labelsize': 14, 'ytick.labelsize': 14}
 
-def read_data(landscape_def):
+def read_data(landscape_def, chmm):
     df_lst = []
     for tis in tis_order:
-        if landscape_def == 'contact':
-            infile = f'{EXP_DAT_PATH}/{tis}_gene_with_enh-count_frac-enh-spec_hicQ05-linked.tsv'
-        elif landscape_def == 'loop':
-            infile = f'{EXP_DAT_PATH}/{tis}_gene_with_enh-count_frac-enh-spec_peakachuloop-linked.tsv'
+        if chmm:
+            if landscape_def == 'contact':
+                infile = f'{EXP_DATA_PATH}/{tis}_gene_with_chromhmm-enh-count_frac-enh-spec_hicQ05-linked.tsv'
+            elif landscape_def == 'loop':
+                infile = f'{EXP_DATA_PATH}/{tis}_gene_with_chromhmm-enh-count_frac-enh-spec_peakachuloop-linked.tsv'
+        else:
+            if landscape_def == 'contact':
+                infile = f'{EXP_DATA_PATH}/{tis}_gene_with_enh-count_frac-enh-spec_hicQ05-linked.tsv'
+            elif landscape_def == 'loop':
+                infile = f'{EXP_DATA_PATH}/{tis}_gene_with_enh-count_frac-enh-spec_peakachuloop-linked.tsv'
         enh_num_by_gene = pd.read_table(infile)
         enh_num_by_gene = enh_num_by_gene.assign(rel_entropy_bins=lambda x: pd.cut(x['rel_entropy'], bins=10))
         enh_num_by_gene = enh_num_by_gene.assign(enh_rel_entropy_bins=lambda x: pd.cut(x['enh_rel_entropy'], bins=5))
@@ -70,20 +82,22 @@ def read_data(landscape_def):
                                               labels=tisspec_bins)
     return all_tis
 
-def read_matched_data(tis, landscape_type, dtype):
+def read_matched_data(tis, landscape_type, dtype, chmm):
+    if chmm:
+        return pd.read_table(f'{MAT_DAT_PATH}/matched_{dtype}{tis}_{landscape_type}_chromhmm.tsv', sep='\t')
     return pd.read_table(f'{MAT_DAT_PATH}/matched_{dtype}{tis}_{landscape_type}.tsv', sep='\t')
 ### \\
 
 for cretype in ['', 'gt0_']:
     for landscape_def in ['loop', 'contact']:
         # create dataframe of enhancer number by gene with all tissues
-        all_tis = read_data(landscape_def)
+        all_tis = read_data(landscape_def, chromhmm)
         all_tis_exp = all_tis[all_tis['exp']==1]
 
         ### // full matched sets \\ ###
         df_lst = []
         for tis in tis_order:
-            dd = (read_matched_data(tis=tis, landscape_type=landscape_def, dtype=cretype)
+            dd = (read_matched_data(tis=tis, landscape_type=landscape_def, dtype=cretype, chmm=chromhmm)
                     .merge(all_tis_exp.query(f'tissue=="{tis}"'), how='left')
                     .filter(['tissue', 'anno', 'gtex_exp_log2', 'target_gene', 'enh_num', 'frac_tisspec_enh', 'frac_phastcons'])
                  )
@@ -108,7 +122,10 @@ for cretype in ['', 'gt0_']:
             g.legend(handles=g.legend_.legendHandles[0:2], frameon=False, bbox_to_anchor=(1, 1.15))
             sns.despine()
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/all_{landscape_def}_{cretype}frac-tisspec-enhXtisspec_bytissue_boxplot_withpoints.{fmt}', format=fmt, dpi=400)
+            if chromhmm:
+                plt.savefig(f'{RES_PATH}/all_{landscape_def}_chromhmm-{cretype}frac-tisspec-enhXtisspec_bytissue_boxplot_withpoints.{fmt}', format=fmt, dpi=400)
+            else:
+                plt.savefig(f'{RES_PATH}/all_{landscape_def}_{cretype}frac-tisspec-enhXtisspec_bytissue_boxplot_withpoints.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -124,7 +141,10 @@ for cretype in ['', 'gt0_']:
             g.legend(handles=g.legend_.legendHandles[0:2], frameon=False, bbox_to_anchor=(1, 1.15), labels=['Broad Expression', 'Tissue-specific Expression'])
             sns.despine()
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/all_{landscape_def}_{cretype}frac-tisspec-enhXtisspec_bytissue_boxplot.{fmt}', format=fmt, dpi=400)
+            if chromhmm:
+                plt.savefig(f'{RES_PATH}/all_{landscape_def}_chromhmm-{cretype}frac-tisspec-enhXtisspec_bytissue_boxplot.{fmt}', format=fmt, dpi=400)
+            else:
+                plt.savefig(f'{RES_PATH}/all_{landscape_def}_{cretype}frac-tisspec-enhXtisspec_bytissue_boxplot.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -140,7 +160,10 @@ for cretype in ['', 'gt0_']:
             g.legend(handles=g.legend_.legendHandles, frameon=False, bbox_to_anchor=(1, 1.15))
             sns.despine()
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/all_{landscape_def}_{cretype}num-enhXtisspec_bytissue_boxplot.{fmt}', format=fmt, dpi=400)
+            if chromhmm:
+                plt.savefig(f'{RES_PATH}/all_{landscape_def}_{cretype}num-chromhmm-enhXtisspec_bytissue_boxplot.{fmt}', format=fmt, dpi=400)
+            else:
+                plt.savefig(f'{RES_PATH}/all_{landscape_def}_{cretype}num-enhXtisspec_bytissue_boxplot.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -156,7 +179,10 @@ for cretype in ['', 'gt0_']:
             g.legend(handles=g.legend_.legendHandles, frameon=False, bbox_to_anchor=(1, 1.15))
             sns.despine()
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/all_{landscape_def}_{cretype}frac-phastconsXtisspec_bytissue_H_boxplot_hue.{fmt}', format=fmt, dpi=400)
+            if chromhmm:
+                plt.savefig(f'{RES_PATH}/all_{landscape_def}_chromhmm_{cretype}frac-phastconsXtisspec_bytissue_H_boxplot_hue.{fmt}', format=fmt, dpi=400)
+            else:
+                plt.savefig(f'{RES_PATH}/all_{landscape_def}_{cretype}frac-phastconsXtisspec_bytissue_H_boxplot_hue.{fmt}', format=fmt, dpi=400)
             plt.close()
             ### end_fig
 
@@ -212,5 +238,7 @@ for cretype in ['', 'gt0_']:
         hdf = hdf.assign(num_cre_fdr=lambda x: sm.stats.multipletests(x.num_cre_p, alpha=0.05, method='fdr_bh')[1],
                          phastcons_fdr=lambda x: sm.stats.multipletests(x.phastcons_p, alpha=0.05, method='fdr_bh')[1],
                          frac_tisspec_fdr=lambda x: sm.stats.multipletests(x.frac_tisspec_p, alpha=0.05, method='fdr_bh')[1])
-        hdf.to_csv(f'../res/{landscape_def}_{crelabel}_df.out', sep='\t', index=False, header=True)
-
+        if chromhmm:
+            hdf.to_csv(f'../res/{landscape_def}_{crelabel}_df_chromhmm.out', sep='\t', index=False, header=True)
+        else:
+            hdf.to_csv(f'../res/{landscape_def}_{crelabel}_df.out', sep='\t', index=False, header=True)
