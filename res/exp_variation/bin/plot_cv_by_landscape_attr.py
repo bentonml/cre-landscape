@@ -21,7 +21,12 @@ import statsmodels.api as sm
 plt.switch_backend('agg')  # add to save plots non-interactively
 
 ### // constants and paths \\ ###
-EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-05-10'
+CHROMHMM = True
+if CHROMHMM:
+    EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-12-20'
+else:
+    EXP_DAT_PATH = f'../../link_cre_to_genes/dat/2022-05-10'
+
 CV_FILE_PATH = f'../dat'
 RES_PATH = f'../fig/{str(date.today())}'
 
@@ -48,13 +53,20 @@ rc = {'font.size':14, 'axes.titlesize':16,'axes.labelsize':14, 'legend.fontsize'
 def spearman_pval(x,y):
     return spearmanr(x,y)[1]
 
-def read_data(landscape_def):
+def read_data(landscape_def, chmm):
     df_lst = []
     for tis in tis_order:
-        if landscape_def == 'contact':
-            infile = f'{EXP_DAT_PATH}/{tis}_gene_with_enh-count_frac-enh-spec_hicQ05-linked.tsv'
-        elif landscape_def == 'loop':
-            infile = f'{EXP_DAT_PATH}/{tis}_gene_with_enh-count_frac-enh-spec_peakachuloop-linked.tsv'
+
+        if chmm:
+            if landscape_def == 'contact':
+                infile = f'{EXP_DAT_PATH}/{tis}_gene_with_chromhmm-enh-count_frac-enh-spec_hicQ05-linked.tsv'
+            elif landscape_def == 'loop':
+                infile = f'{EXP_DAT_PATH}/{tis}_gene_with_chromhmm-enh-count_frac-enh-spec_peakachuloop-linked.tsv'
+        else:
+            if landscape_def == 'contact':
+                infile = f'{EXP_DAT_PATH}/{tis}_gene_with_enh-count_frac-enh-spec_hicQ05-linked.tsv'
+            elif landscape_def == 'loop':
+                infile = f'{EXP_DAT_PATH}/{tis}_gene_with_enh-count_frac-enh-spec_peakachuloop-linked.tsv'
         enh_num_by_gene = pd.read_table(infile)
         enh_num_by_gene = enh_num_by_gene.assign(rel_entropy_bins=lambda x: pd.cut(x['rel_entropy'], bins=10))
         enh_num_by_gene = enh_num_by_gene.assign(enh_rel_entropy_bins=lambda x: pd.cut(x['enh_rel_entropy'], bins=5))
@@ -75,8 +87,13 @@ def read_cv_data(tis, thresh='0.8'):
 for landscape_def in ['loop', 'contact']:
     print(landscape_def)
 
+    if CHROMHMM:
+        landscape_label = f'chromhmm_{landscape_def}'
+    else:
+        landscape_label = landscape_def
+
     # create dataframe of enhancer number by gene with all tissues
-    all_tis = read_data(landscape_def)
+    all_tis = read_data(landscape_def, chmm=CHROMHMM)
 
     for tis in tis_order:
         df = read_cv_data(tis)
@@ -92,7 +109,7 @@ for landscape_def in ['loop', 'contact']:
             plt.ylabel('log2(CV)')
             sns.despine()
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_log2exp_v_cv_lmplot.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_log2exp_v_cv_lmplot.{fmt}', format=fmt, dpi=400)
             plt.close()
 
         with sns.plotting_context("paper", rc=rc):
@@ -104,7 +121,7 @@ for landscape_def in ['loop', 'contact']:
             plt.ylabel('Expression Variation')
             sns.despine()
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_log2exp_v_expVar_lmplot.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_log2exp_v_expVar_lmplot.{fmt}', format=fmt, dpi=400)
             plt.close()
 
         with sns.plotting_context("paper", rc=rc):
@@ -118,7 +135,7 @@ for landscape_def in ['loop', 'contact']:
                             square=True, linewidths=.5, cbar_kws={"shrink": .5}, annot=True)
             g.set_xticklabels(g.get_xticklabels(), rotation = 30, horizontalalignment='right')
             plt.tight_layout()
-            plt.savefig(f'{RES_PATH}/{tis}_{landscape_def}_expVar_heatmap.{fmt}', format=fmt, dpi=400)
+            plt.savefig(f'{RES_PATH}/{tis}_{landscape_label}_expVar_heatmap.{fmt}', format=fmt, dpi=400)
             plt.close()
 
             print(f'{tis}, spearman')
@@ -146,6 +163,11 @@ for landscape_def in ['loop', 'contact']:
 for landscape_def in ['loop', 'contact']:
     # create dataframe of enhancer number by gene with all tissues
     all_tis = read_data(landscape_def)
+
+    if CHROMHMM:
+        landscape_label = f'chromhmm_{landscape_def}'
+    else:
+        landscape_label = landscape_def
 
     # create dataframe of all tissues
     dfs = []
@@ -176,7 +198,7 @@ for landscape_def in ['loop', 'contact']:
         g.set_yticklabels(tis_names)
         g.set_ylabel('')
         plt.tight_layout()
-        plt.savefig(f'{RES_PATH}/{landscape_def}_expVar_heatmap_tisspec-incl_alltis_spearman.{fmt}', format=fmt, dpi=400)
+        plt.savefig(f'{RES_PATH}/{landscape_label}_expVar_heatmap_tisspec-incl_alltis_spearman.{fmt}', format=fmt, dpi=400)
         plt.close()
 
     # combine all tissues, no tissue-specificity of gene
@@ -192,7 +214,7 @@ for landscape_def in ['loop', 'contact']:
         g.set_yticklabels(tis_names)
         g.set_ylabel('')
         plt.tight_layout()
-        plt.savefig(f'{RES_PATH}/{landscape_def}_expVar_heatmap_alltis_spearman.{fmt}', format=fmt, dpi=400)
+        plt.savefig(f'{RES_PATH}/{landscape_label}_expVar_heatmap_alltis_spearman.{fmt}', format=fmt, dpi=400)
         plt.close()
 
     # create dataframe of all tissues' p values
@@ -212,4 +234,3 @@ for landscape_def in ['loop', 'contact']:
     print(f'all tissues, {landscape_def}, p-values')
     with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.width', 150, 'display.precision', 8):
         print(df_corr_p)
-
