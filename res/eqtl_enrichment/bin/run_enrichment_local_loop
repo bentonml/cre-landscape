@@ -8,5 +8,6 @@ for tis in ovary psoas_muscle heart_left_ventricle lung spleen small_intestine p
 do
     echo $tis
     ./slurm/gtex_enrichment_peakachuloop_local $tis peakachuloop
+    ./slurm/gtex_enrichment_peakachuloop_chromhmm_local $tis peakachuloop
 done
 
