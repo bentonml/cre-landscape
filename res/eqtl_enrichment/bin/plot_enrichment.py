@@ -20,7 +20,8 @@ from scipy.stats import ttest_ind, mannwhitneyu
 ### // constants, paths, functions \\ ###
 RES_PATH = '../res'
 FIG_PATH = '../fig'
-DATE = '2022-06-13'
+DATE = '2023-01-23'
+CHROMHMM = '_chromhmm'
 
 # create a date stamped dir for figures
 if not os.path.isdir(FIG_PATH):
@@ -39,7 +40,7 @@ rc = {'font.size':14, 'axes.titlesize':16,'axes.labelsize':14, 'legend.fontsize'
 
 ### // functions \\ ###
 def read_enrichment_output_quartile(tissue, landscape_type, date, path):
-    with open(f'{path}/{date}_{tissue}_eqtl_{landscape_type}_enrichment.out', 'r') as res_file:
+    with open(f'{path}/{date}_{tissue}_eqtl_{landscape_type}{CHROMHMM}_enrichment.out', 'r') as res_file:
         res = []
 
         for q in ['q1', 'q2', 'q3', 'q4']:
@@ -62,7 +63,7 @@ def create_enrichment_df_quartile(landscape_type, date=DATE, path=RES_PATH, tiss
 def create_enrichment_df_full(tissues, landscape_type, date, path):
     res = []
     for tis in tissues:
-        with open(f'{path}/{date}_{tis}_eqtl_{landscape_type}_enrichment.out', 'r') as res_file:
+        with open(f'{path}/{date}_{tis}_eqtl_{landscape_type}{CHROMHMM}_enrichment.out', 'r') as res_file:
             next(res_file)  # skip command line
             next(res_file)  # skip header line
             line = res_file.readline().strip('\n').split('\t')
@@ -127,7 +128,8 @@ def add_vline(axes):
         ax.axvline(0, c='k')
 ### \\
 
-for landscape in ['peakachuloop', 'hicQ05']:
+for landscape in ['peakachuloop']: #, 'hicQ05']:
+    '''
     # plot for CRE enrichment without quartile, all tissues on same plot
     eqtl_full = create_enrichment_df_full(tissues, landscape_type=landscape, date=DATE, path=RES_PATH)
     eqtl_full = format_enrichment_df(eqtl_full)
@@ -151,7 +153,7 @@ for landscape in ['peakachuloop', 'hicQ05']:
 
     expected_counts = []
     for tis in tissues:
-        obs, exp_list = read_counts(f'../dat/{tis}_{landscape}_cre_full.counts')
+        obs, exp_list = read_counts(f'../dat/{tis}_{landscape}{CHROMHMM}_cre_full.counts')
         c = pd.DataFrame(exp_list, columns=['expected_count'])
         c['tissue'] = tis
         expected_counts.append(c[c.expected_count >= 0])
@@ -167,9 +169,10 @@ for landscape in ['peakachuloop', 'hicQ05']:
         plt.tight_layout()
         plt.savefig(f'{FIG_PATH}/{str(date.today())}_{landscape}_eqtl_full_boxplot_with_counts.{fmt}', format=fmt, dpi=400)
         plt.close()
+    '''
 
     # read in data and generate table
-    eqtl_df = create_enrichment_df_quartile(landscape, date='2022-06-01', path=RES_PATH)
+    eqtl_df = create_enrichment_df_quartile(landscape, date=DATE, path=RES_PATH)
     eqtl_df = format_enrichment_df(eqtl_df)
     eqtl_df['quartile'] = eqtl_df.landscape_quartile.map({'q1':1, 'q2':2, 'q3':3, 'q4':4})
 
@@ -193,7 +196,7 @@ for landscape in ['peakachuloop', 'hicQ05']:
     expected_counts = []
     for tis in tissues:
         for q in range(1,5):
-            obs, exp_list = read_counts(f'../dat/{tis}_{landscape}_cre_quart{q}.counts')
+            obs, exp_list = read_counts(f'../dat/{tis}_{landscape}{CHROMHMM}_cre_quart{q}.counts')
             c = pd.DataFrame(exp_list, columns=['expected_count'])
             c['observed'] = obs
             c['tissue'] = tis
@@ -229,8 +232,8 @@ for landscape in ['peakachuloop', 'hicQ05']:
         plt.close()
 
     for tis in tissues:
-        obs_a, exp_list_a = read_counts(f'../dat/{tis}_{landscape}_cre_quart1.counts')
-        obs_b, exp_list_b = read_counts(f'../dat/{tis}_{landscape}_cre_quart4.counts')
+        obs_a, exp_list_a = read_counts(f'../dat/{tis}_{landscape}{CHROMHMM}_cre_quart1.counts')
+        obs_b, exp_list_b = read_counts(f'../dat/{tis}_{landscape}{CHROMHMM}_cre_quart4.counts')
 
         fc_list_a = calculate_fc_distribution(obs_a, exp_list_a)
         fc_list_b = calculate_fc_distribution(obs_b, exp_list_b)
