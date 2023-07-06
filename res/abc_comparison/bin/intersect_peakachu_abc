@@ -1,0 +1,10 @@
+#!/bin/bash
+DAT_PATH='/dors/capra_lab/users/bentonml/cre_landscape/res/link_cre_to_genes/dat/2022-05-10'
+
+tail -n+2 ${DAT_PATH}/heart_left_ventricle_enh_to_gene_peakachuloop-linked.tsv | bedtools intersect -wo -a stdin -b ../dat/abc_predictions_heart_ventricle-ENCODE.bed > ../dat/heart_peakachuloop_abc_intersect_wo.bed
+tail -n+2 ${DAT_PATH}/liver_enh_to_gene_peakachuloop-linked.tsv | bedtools intersect -wo -a stdin -b ../dat/abc_predictions_liver-ENCODE.bed > ../dat/liver_peakachuloop_abc_intersect_wo.bed
+tail -n+2 ${DAT_PATH}/ovary_enh_to_gene_peakachuloop-linked.tsv | bedtools intersect -wo -a stdin -b ../dat/abc_predictions_ovary-Roadmap.bed > ../dat/ovary_peakachuloop_abc_intersect_wo.bed
+tail -n+2 ${DAT_PATH}/pancreas_enh_to_gene_peakachuloop-linked.tsv | bedtools intersect -wo -a stdin -b ../dat/abc_predictions_pancreas-Roadmap.bed > ../dat/pancreas_peakachuloop_abc_intersect_wo.bed
+tail -n+2 ${DAT_PATH}/psoas_muscle_enh_to_gene_peakachuloop-linked.tsv | bedtools intersect -wo -a stdin -b ../dat/abc_predictions_psoas_muscle-Roadmap.bed > ../dat/muscle_peakachuloop_abc_intersect_wo.bed
+tail -n+2 ${DAT_PATH}/spleen_enh_to_gene_peakachuloop-linked.tsv | bedtools intersect -wo -a stdin -b ../dat/abc_predictions_spleen-ENCODE.bed > ../dat/spleen_peakachuloop_abc_intersect_wo.bed
+
