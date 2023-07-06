@@ -428,11 +428,11 @@ for tis in ['ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen', '
 
     # save dataframe of number of enhancers linked to each gene
     enh_num_by_gene = create_enh_num_by_gene_df(enh_to_gene, gene_anno)
-    to_csv_new_subdir(enh_num_by_gene, f'{RES_PATH}/dat/{str(date.today())}', f'{tis}_gene_with_enh-count_frac-enh-spec_hicQ05-linked.tsv')
+    to_csv_new_subdir(enh_num_by_gene, f'{RES_PATH}/dat/{str(date.today())}', f'{tis}_gene_with_chromhmm-enh-count_frac-enh-spec_hicQ05-linked.tsv')
 
     # save dataframe of enhancer to gene links
     enh_to_gene = enh_to_gene.rename(columns={tis:'gtex_tpm'}).assign(tissue=tis)
-    to_csv_new_subdir(enh_to_gene, f'{RES_PATH}/dat/{str(date.today())}', f'{tis}_enh_to_gene_hicQ05-linked.tsv')
+    to_csv_new_subdir(enh_to_gene, f'{RES_PATH}/dat/{str(date.today())}', f'{tis}_chromhmm-enh_to_gene_hicQ05-linked.tsv')
     ### \\
 
     ### // LOOP-BASED LANDSCAPE \\ ###
