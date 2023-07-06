@@ -432,6 +432,7 @@ for tis in ['ovary', 'psoas_muscle', 'heart_left_ventricle', 'lung', 'spleen', '
     hic_cdf = hic_pairs_anno.assign(int_2_anno=lambda x: np.where((x.re_count == 0) & (x.cg_count == 0) & (x.rg_count == 0) & (x.ce_count == 0), 0, 1))
     hic_cdf["Anchor Type"] = hic_cdf["int_2_anno"].map(map_dict)
     with sns.plotting_context("paper", rc=rc):
+        sns.set(font_scale = 2)
         g = sns.displot(x='q', hue='Anchor Type', data=hic_cdf, kind='ecdf', palette='Reds', hue_order=['No annotation', 'Annotation in both anchors'])
         g.set(title=f'{tis_names[tis]}')
         sns.move_legend(g, 'lower right')
